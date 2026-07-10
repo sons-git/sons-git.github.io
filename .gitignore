@@ -7,11 +7,10 @@
 dev/
 
 # -------------------------------------------------------------
-# Node / npm / package managers (in case any tool creates them
-# at the site root during local iteration).
+# Node — node_modules is huge and reproducible from package-lock.
+# The lockfile itself IS committed for deterministic esbuild version.
 # -------------------------------------------------------------
 node_modules/
-package-lock.json
 yarn.lock
 pnpm-lock.yaml
 npm-debug.log*
@@ -28,8 +27,7 @@ Thumbs.db
 .idea/
 
 # -------------------------------------------------------------
-# Local build artefacts, if ever added
+# Build outputs — kept committed for GitHub Pages to serve.
+# Local `.cache/` and other tooling scratch dirs excluded.
 # -------------------------------------------------------------
-dist/
-build/
 .cache/

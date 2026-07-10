@@ -1,0 +1,16 @@
+{
+  "name": "son-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Alive portfolio site — Tang Trung Son. Built with vanilla ES modules + Three.js.",
+  "scripts": {
+    "build:js": "esbuild js/main.js --bundle --minify --format=esm --external:three --external:three/addons/* --outfile=build/bundle.min.js --legal-comments=none",
+    "build:css": "esbuild css/style.css --bundle --minify --outfile=build/style.min.css",
+    "build": "npm run build:js && npm run build:css",
+    "watch:js": "esbuild js/main.js --bundle --format=esm --external:three --external:three/addons/* --outfile=build/bundle.min.js --sourcemap=inline --watch",
+    "watch:css": "esbuild css/style.css --bundle --outfile=build/style.min.css --watch"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0"
+  }
+}
