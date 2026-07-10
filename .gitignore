@@ -1,0 +1,35 @@
+# -------------------------------------------------------------
+# Deploy hygiene — nothing under `dev/` should ever ship to Pages.
+# dev/ holds the property-based test harness, Playwright specs,
+# and their node_modules. Not needed at runtime, and exposes
+# internal test scaffolding if published.
+# -------------------------------------------------------------
+dev/
+
+# -------------------------------------------------------------
+# Node / npm / package managers (in case any tool creates them
+# at the site root during local iteration).
+# -------------------------------------------------------------
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# -------------------------------------------------------------
+# Editor / OS junk
+# -------------------------------------------------------------
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# -------------------------------------------------------------
+# Local build artefacts, if ever added
+# -------------------------------------------------------------
+dist/
+build/
+.cache/
