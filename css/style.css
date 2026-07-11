@@ -1330,14 +1330,15 @@ main { position: relative; z-index: 2; }
 .timeline--editorial::before {
   content: '';
   position: absolute;
-  /* Rail width 2px, left 180 → rail center at x=181px.
-     Dot width 14px, left 174 → dot center at x=181px.
-     Even widths + matching centers gives pixel-perfect alignment;
-     the old odd-width setup had a half-pixel offset that read as a
-     subtle misalignment on non-fractional displays. (2025-11 fix) */
+  /* Rail width 2 px, left 180 → rail centre at x = 181 px.
+     Dot width 14 px, left 174 → dot centre at x = 181 px.
+     Vertical extents are driven by --rail-top / --rail-height,
+     computed in main.js `alignTimelineRail()` so the rail starts
+     at the first dot's centre and ends at the last dot's centre —
+     no exposed line above the top dot or below the bottom one. */
   left: 180px;
-  top: 8px;
-  bottom: 8px;
+  top: var(--rail-top, 22px);
+  height: var(--rail-height, calc(100% - 44px));
   width: 2px;
   background: linear-gradient(to bottom, var(--accent), var(--accent-2) 60%, transparent);
   background-size: 100% var(--tl-fill, 0%);
@@ -1355,10 +1356,12 @@ main { position: relative; z-index: 2; }
 .timeline--editorial .tl-item::before {
   content: '';
   position: absolute;
-  /* Dot 14x14, left 174 → visual center at (174 + 7) = 181px — matches
-     the rail center at (180 + 1) = 181px. (2025-11 alignment fix) */
+  /* Dot 14x14, left 174 → visual centre at (174 + 7) = 181 px, which
+     matches the rail centre at (180 + 1) = 181 px. Vertical position
+     is driven by --dot-y (year-text centre, computed in
+     alignTimelineRail); -7 px centres the 14 px dot on that point. */
   left: 174px;
-  top: 11px;
+  top: calc(var(--dot-y, 22px) - 7px);
   width: 14px;
   height: 14px;
   border-radius: 50%;
@@ -1436,7 +1439,12 @@ main { position: relative; z-index: 2; }
     gap: 8px;
     padding-left: 40px;
   }
-  .timeline--editorial .tl-item::before { left: 6px; top: 8px; }
+  /* Same procedural alignment on mobile — only left changes.
+     `--dot-y` is still written by alignTimelineRail against the year. */
+  .timeline--editorial .tl-item::before {
+    left: 6px;
+    top: calc(var(--dot-y, 12px) - 7px);
+  }
   .timeline--editorial .tl-when {
     text-align: left;
     padding-right: 0;

@@ -137,6 +137,50 @@ function renderTimeline() {
 }
 
 /**
+ * Procedurally align the timeline rail + dots.
+ *
+ * The rail is a vertical line; each item has a dot that should sit on
+ * the year's vertical centre. Fixed pixel offsets in CSS can't get
+ * this right across viewports and font-load races, so we measure
+ * `.tl-year` per item and write two things:
+ *   • Each `.tl-item` gets `--dot-y` — the year's vertical centre in
+ *     px, measured from the item top. CSS uses `top: calc(var(--dot-y)
+ *     - 7px)` to centre a 14 px dot on it.
+ *   • The `.timeline--editorial` container gets `--rail-top` and
+ *     `--rail-height` — the rail starts at the first dot's centre and
+ *     ends at the last dot's centre, so no exposed rail extends above
+ *     the top dot or below the bottom one.
+ *
+ * Runs after renderTimeline, again 250 ms later (font-load safety),
+ * and on window resize.
+ */
+function alignTimelineRail() {
+  const list = document.querySelector('.timeline--editorial');
+  if (!list) return;
+  const items = list.querySelectorAll('.tl-item');
+  if (items.length === 0) return;
+
+  const listRect = list.getBoundingClientRect();
+  const dotCentersInList = [];
+
+  items.forEach((item) => {
+    const anchor = item.querySelector('.tl-year') || item;
+    const anchorRect = anchor.getBoundingClientRect();
+    const itemRect   = item.getBoundingClientRect();
+    const dotYWithinItem = (anchorRect.top + anchorRect.height / 2) - itemRect.top;
+    item.style.setProperty('--dot-y', `${dotYWithinItem}px`);
+    dotCentersInList.push((anchorRect.top + anchorRect.height / 2) - listRect.top);
+  });
+
+  if (dotCentersInList.length >= 1) {
+    const railTop = dotCentersInList[0];
+    const railBottom = dotCentersInList[dotCentersInList.length - 1];
+    list.style.setProperty('--rail-top', `${railTop}px`);
+    list.style.setProperty('--rail-height', `${Math.max(0, railBottom - railTop)}px`);
+  }
+}
+
+/**
  * Work — Editorial spotlight + reading list.
  * Emits: .work__spotlight (projects[0]) with
  *          .work__spotlight-eyebrow (.work__spotlight-badge + -year) /
@@ -507,6 +551,19 @@ function boot() {
   renderVision();
   renderContact();
   initClock();
+
+  // Timeline rail + dots — procedural alignment. Fires now for the
+  // initial layout, again 250 ms later so late web-font swaps don't
+  // leave stale positions, and on window resize (debounced 80 ms).
+  requestAnimationFrame(() => {
+    alignTimelineRail();
+    setTimeout(alignTimelineRail, 250);
+  });
+  let alignRailTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(alignRailTimer);
+    alignRailTimer = setTimeout(alignTimelineRail, 80);
+  });
 
   // Wire the placeholder resume + linkedin links so they're easy to find later
   const resumeBtn = document.getElementById('resume-btn');
