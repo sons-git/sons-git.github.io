@@ -784,22 +784,42 @@ const droneWork = makeDrone((c, g) => {
   return [osc, lfo];
 });
 
-// Skills — high shimmer cluster. Two close-tuned high sines for a
-// gentle beating texture. Reads as "SENTINEL parsing." Very quiet.
+// Skills — low sustained presence. The previous version used a
+// beating 660 Hz dyad which sat in the "annoying" band. Now: a
+// single low sine (A2 = 110 Hz) with very slow filter drift, plus
+// a distant highpass whisper. Reads as parsing atmosphere without
+// having a pitch centre to fight with the ambient bed. Item-level
+// "click" sounds fire per element during the fan sweep (see the
+// interactions.js skill raycast handler).
 const droneSkills = makeDrone((c, g) => {
-  const osc1 = c.createOscillator();
-  const osc2 = c.createOscillator();
-  osc1.type = 'sine'; osc2.type = 'sine';
-  osc1.frequency.value = 660; // E5
-  osc2.frequency.value = 661.8; // beats every ~0.6 s → texture
+  const osc = c.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.value = 110;
   const filt = c.createBiquadFilter();
-  filt.type = 'bandpass'; filt.frequency.value = 660; filt.Q.value = 3;
-  const level = c.createGain(); level.gain.value = 0.028;
-  osc1.connect(filt); osc2.connect(filt);
-  filt.connect(level).connect(g);
+  filt.type = 'lowpass'; filt.frequency.value = 500; filt.Q.value = 1;
+  const lfo = c.createOscillator();
+  lfo.type = 'sine';
+  lfo.frequency.value = 1 / 22;
+  const lfoDepth = c.createGain(); lfoDepth.gain.value = 200;
+  lfo.connect(lfoDepth).connect(filt.frequency);
+  const level = c.createGain(); level.gain.value = 0.035;
+  osc.connect(filt).connect(level).connect(g);
+
+  // Distant whisper — very quiet highpass noise for the "data
+  // flowing" texture. Not pitched.
+  const buf = c.createBuffer(1, c.sampleRate * 4, c.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * 0.3;
+  const noise = c.createBufferSource();
+  noise.buffer = buf; noise.loop = true;
+  const nFilt = c.createBiquadFilter();
+  nFilt.type = 'highpass'; nFilt.frequency.value = 3200; nFilt.Q.value = 0.7;
+  const nLevel = c.createGain(); nLevel.gain.value = 0.014;
+  noise.connect(nFilt).connect(nLevel).connect(g);
+
   const now = c.currentTime;
-  osc1.start(now); osc2.start(now);
-  return [osc1, osc2];
+  osc.start(now); lfo.start(now); noise.start(now);
+  return [osc, lfo, noise];
 });
 
 // Recognition — verify tone. Sustained metallic note (E3 + inharmonic
@@ -823,38 +843,109 @@ const droneRecognition = makeDrone((c, g) => {
   return [osc, oscP];
 });
 
-// Vision — expansive pad. Sustained A/E/A triad, wide.
+// Vision — expansive void. The previous version had a full triad
+// playing constantly which read as an intrusive chord looping.
+// Now: a single very low sustained sub tone + a slow noise wash
+// (like distant wind on a wide plain). No pitched chord to fight
+// with the ambient bed's Am9. Reads as SENTINEL broadcasting into
+// wide open space.
 const droneVision = makeDrone((c, g) => {
-  const notes = [220, 330, 440];
-  const oscs = notes.map((freq) => {
-    const o = c.createOscillator();
-    o.type = 'triangle';
-    o.frequency.value = freq;
-    return o;
-  });
-  const filt = c.createBiquadFilter();
-  filt.type = 'lowpass'; filt.frequency.value = 1600; filt.Q.value = 0.7;
-  const level = c.createGain(); level.gain.value = 0.035;
-  oscs.forEach((o) => o.connect(filt));
-  filt.connect(level).connect(g);
-  const now = c.currentTime;
-  oscs.forEach((o) => o.start(now));
-  return oscs;
-});
-
-// Contact — soft listening tone. Sub A3 sine, very quiet. Sits under
-// the hover hum without competing.
-const droneContact = makeDrone((c, g) => {
+  // Sub grounding tone — A1, barely audible.
   const osc = c.createOscillator();
   osc.type = 'sine';
-  osc.frequency.value = 220;
-  const filt = c.createBiquadFilter();
-  filt.type = 'lowpass'; filt.frequency.value = 700; filt.Q.value = 1;
-  const level = c.createGain(); level.gain.value = 0.03;
-  osc.connect(filt).connect(level).connect(g);
+  osc.frequency.value = 55; // A1
+  const oLevel = c.createGain(); oLevel.gain.value = 0.03;
+  osc.connect(oLevel).connect(g);
+
+  // Wide airy noise wash — bandpass around 2 kHz with a very slow
+  // filter LFO. Reads as open space.
+  const buf = c.createBuffer(1, c.sampleRate * 6, c.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * 0.4;
+  const noise = c.createBufferSource();
+  noise.buffer = buf; noise.loop = true;
+  const nFilt = c.createBiquadFilter();
+  nFilt.type = 'bandpass'; nFilt.frequency.value = 2000; nFilt.Q.value = 1;
+  const nLfo = c.createOscillator();
+  nLfo.type = 'sine';
+  nLfo.frequency.value = 1 / 25;
+  const nLfoDepth = c.createGain(); nLfoDepth.gain.value = 800;
+  nLfo.connect(nLfoDepth).connect(nFilt.frequency);
+  const nLevel = c.createGain(); nLevel.gain.value = 0.022;
+  noise.connect(nFilt).connect(nLevel).connect(g);
+
   const now = c.currentTime;
-  osc.start(now);
-  return [osc];
+  osc.start(now); nLfo.start(now); noise.start(now);
+  return [osc, nLfo, noise];
+});
+
+// Contact — sci-fi listening bed. Low sustained sine sitting
+// under a slow high-shimmer noise wash + occasional soft "search
+// ping" chirps that fire at random long intervals. Reads as
+// SENTINEL scanning the void for signals. Peak gain kept tiny so
+// it stays atmospheric.
+const droneContact = makeDrone((c, g) => {
+  // Sub tone (A2) — grounding.
+  const osc = c.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.value = 110;
+  const oFilt = c.createBiquadFilter();
+  oFilt.type = 'lowpass'; oFilt.frequency.value = 500; oFilt.Q.value = 1;
+  const oLevel = c.createGain(); oLevel.gain.value = 0.028;
+  osc.connect(oFilt).connect(oLevel).connect(g);
+
+  // Slow shimmer wash — highpass filtered noise, slow amp LFO.
+  const nBuf = c.createBuffer(1, c.sampleRate * 4, c.sampleRate);
+  const nd = nBuf.getChannelData(0);
+  for (let i = 0; i < nd.length; i++) nd[i] = (Math.random() * 2 - 1) * 0.3;
+  const noise = c.createBufferSource();
+  noise.buffer = nBuf; noise.loop = true;
+  const nFilt = c.createBiquadFilter();
+  nFilt.type = 'bandpass'; nFilt.frequency.value = 2200; nFilt.Q.value = 1.5;
+  const nLfo = c.createOscillator();
+  nLfo.type = 'sine';
+  nLfo.frequency.value = 1 / 18;
+  const nLfoDepth = c.createGain(); nLfoDepth.gain.value = 900;
+  nLfo.connect(nLfoDepth).connect(nFilt.frequency);
+  const nLevel = c.createGain(); nLevel.gain.value = 0.02;
+  noise.connect(nFilt).connect(nLevel).connect(g);
+
+  // Sparse "search pings" — one short soft high tone every
+  // 6-14 s at a random frequency in the E5/A5 region. Reads as
+  // SENTINEL periodically sampling the channel. Timer clears
+  // itself when the drone is stopped (via nodes cleanup below).
+  let stopped = false;
+  const pingFreqs = [660, 784, 880, 988, 1046];
+  function schedulePing() {
+    if (stopped) return;
+    const delayMs = 6000 + Math.random() * 8000;
+    setTimeout(() => {
+      if (stopped) return;
+      const t = c.currentTime;
+      const freq = pingFreqs[Math.floor(Math.random() * pingFreqs.length)];
+      const p = c.createOscillator();
+      p.type = 'sine';
+      p.frequency.value = freq;
+      const pF = c.createBiquadFilter();
+      pF.type = 'lowpass'; pF.frequency.value = 2400; pF.Q.value = 0.7;
+      const pG = c.createGain();
+      pG.gain.setValueAtTime(0, t);
+      pG.gain.linearRampToValueAtTime(0.05, t + 0.04);
+      pG.gain.exponentialRampToValueAtTime(0.0001, t + 0.9);
+      p.connect(pF).connect(pG).connect(g);
+      p.start(t); p.stop(t + 1.0);
+      schedulePing();
+    }, delayMs);
+  }
+  schedulePing();
+
+  // Wrap noise into a fake "stoppable" node so the drone teardown
+  // cleans up the ping scheduler too.
+  const pseudo = { stop() { stopped = true; } };
+
+  const now = c.currentTime;
+  osc.start(now); nLfo.start(now); noise.start(now);
+  return [osc, nLfo, noise, pseudo];
 });
 
 const SECTION_DRONES = [
@@ -940,29 +1031,63 @@ export function laser() {
   });
 }
 
-// Vision map — expanding chord swell. Three notes simultaneously,
-// slow attack, long decay. No stagger (would read as arpeggio).
+// "Click into place" — per-item cue as each skill item snaps into
+// the scan. Very short, very quiet, slightly pitch-varied per
+// call so a cascade doesn't sound like a machine gun. Reads as
+// individual data points registering.
+let clickIntoPlaceCount = 0;
+export function clickIntoPlace() {
+  play((c, out) => {
+    const now = c.currentTime;
+    // Two-note stack — one sub thump, one high accent, both super
+    // short. Pitch varies per call by ±60 cents so the cascade
+    // feels natural.
+    const cents = ((clickIntoPlaceCount++ % 6) - 3) * 20;
+    const detune = Math.pow(2, cents / 1200);
+
+    const sub = c.createOscillator();
+    sub.type = 'sine';
+    sub.frequency.value = 260 * detune;
+    const subG = c.createGain();
+    subG.gain.setValueAtTime(0, now);
+    subG.gain.linearRampToValueAtTime(0.14, now + 0.004);
+    subG.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+    sub.connect(subG).connect(out);
+    sub.start(now); sub.stop(now + 0.09);
+
+    const hi = c.createOscillator();
+    hi.type = 'sine';
+    hi.frequency.value = 2400 * detune;
+    const hiG = c.createGain();
+    hiG.gain.setValueAtTime(0, now);
+    hiG.gain.linearRampToValueAtTime(0.05, now + 0.002);
+    hiG.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+    hi.connect(hiG).connect(out);
+    hi.start(now); hi.stop(now + 0.06);
+  });
+}
+
+// Vision map — soft single-note ping when an item is mapped. The
+// previous triad + stacking (5 items in a row) was overwhelming.
+// One quiet high note per hit, rate-limited more aggressively.
 let lastBroadcastAt = 0;
 export function broadcast() {
   const nowT = performance.now();
-  if (nowT - lastBroadcastAt < 200) return;
+  if (nowT - lastBroadcastAt < 500) return;
   lastBroadcastAt = nowT;
   play((c, out) => {
-    const notes = [220, 330, 440]; // A3 E4 A4 — open shape
     const now = c.currentTime;
-    notes.forEach((freq) => {
-      const osc = c.createOscillator();
-      osc.type = 'triangle';
-      osc.frequency.value = freq;
-      const filt = c.createBiquadFilter();
-      filt.type = 'lowpass'; filt.frequency.value = 1800; filt.Q.value = 0.7;
-      const g = c.createGain();
-      g.gain.setValueAtTime(0, now);
-      g.gain.linearRampToValueAtTime(0.1, now + 0.12);
-      g.gain.exponentialRampToValueAtTime(0.0001, now + 1.1);
-      osc.connect(filt).connect(g).connect(out);
-      osc.start(now); osc.stop(now + 1.2);
-    });
+    const osc = c.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = 880; // A5 — bright but not sharp
+    const filt = c.createBiquadFilter();
+    filt.type = 'lowpass'; filt.frequency.value = 2400; filt.Q.value = 0.7;
+    const g = c.createGain();
+    g.gain.setValueAtTime(0, now);
+    g.gain.linearRampToValueAtTime(0.05, now + 0.05);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.7);
+    osc.connect(filt).connect(g).connect(out);
+    osc.start(now); osc.stop(now + 0.75);
   });
 }
 

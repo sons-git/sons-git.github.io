@@ -882,6 +882,11 @@ export function initInteractions({
         : (i * flashWindow) / (rays.length - 1);
       setTimeout(() => {
         r.el.classList.add('scanning');
+        // "Click into place" per item — subtle short cue as each
+        // item registers under the scan. Pitch varies per call so
+        // the cascade sounds like discrete data points, not a
+        // machine-gun tick.
+        sfx.clickIntoPlace();
         const hold = r.isKey ? 940 : 520;
         setTimeout(() => r.el.classList.remove('scanning'), hold);
       }, at);
