@@ -62,8 +62,18 @@ function ensureCtx() {
   masterGain.connect(ctx.destination);
 
   sfxBus = ctx.createGain();
-  sfxBus.gain.value = 0.14;
-  sfxBus.connect(masterGain);
+  sfxBus.gain.value = 0.11; // slight cut to keep headroom for overlaps
+  // Soft compressor as a safety limiter — catches any transient
+  // peaks so multiple sounds firing at once never hard-clip the
+  // destination. Threshold -12 dB, gentle 3:1 ratio, fast attack,
+  // moderate release. Doesn't colour normal-level content.
+  const sfxComp = ctx.createDynamicsCompressor();
+  sfxComp.threshold.value = -12;
+  sfxComp.knee.value = 6;
+  sfxComp.ratio.value = 3;
+  sfxComp.attack.value = 0.003;
+  sfxComp.release.value = 0.15;
+  sfxBus.connect(sfxComp).connect(masterGain);
 
   // Music at 1.2 % — barely present, just atmosphere.
   musicBus = ctx.createGain();
@@ -80,41 +90,53 @@ function ensureCtx() {
 // the SFX bus — every SFX picks up ~100 ms of decorrelated tail.
 // -------------------------------------------------------------
 function createSpace(c, output) {
-  // Bigger, longer, darker reverb — everything sits in a cathedral.
-  // Cinematic ambient design leans on space, not on the source.
+  // Convolution reverb with a synthetic impulse response — the
+  // proper way to do reverb in Web Audio. The previous 4-tap
+  // feedback network had a shared feedback loop across all taps,
+  // so total gain was fb * 4 ≈ 2.2 per iteration — runaway
+  // amplification that clipped as energy accumulated.
+  //
+  // Here we generate a 2-second exponentially-decaying stereo
+  // noise IR (dark, roomy) and run the wet path through a
+  // ConvolverNode. Stable by construction — no feedback loop.
   const input = c.createGain();
   input.gain.value = 1;
 
-  // Dry slightly reduced so the wet dominates and sounds don't feel
-  // stone-close to the ear.
-  const dry = c.createGain(); dry.gain.value = 0.85;
+  // Dry passthrough
+  const dry = c.createGain(); dry.gain.value = 1;
   input.connect(dry).connect(output);
 
-  const wet = c.createGain();
-  wet.gain.value = 0.55;
-  // 4-tap dampened delay network — longer taps, higher feedback,
-  // heavier lowpass damping. Reads as a large room decay.
-  const d1 = c.createDelay(1.5); d1.delayTime.value = 0.083;
-  const d2 = c.createDelay(1.5); d2.delayTime.value = 0.121;
-  const d3 = c.createDelay(1.5); d3.delayTime.value = 0.163;
-  const d4 = c.createDelay(1.5); d4.delayTime.value = 0.211;
-  const fb = c.createGain(); fb.gain.value = 0.55;
+  // Impulse response — 2 s exponential decay, filtered to sit dark.
+  const durS = 2.0;
+  const irLen = Math.floor(c.sampleRate * durS);
+  const ir = c.createBuffer(2, irLen, c.sampleRate);
+  for (let ch = 0; ch < 2; ch++) {
+    const d = ir.getChannelData(ch);
+    for (let i = 0; i < irLen; i++) {
+      // Exponential decay curve (cube gives a natural fall-off)
+      const env = Math.pow(1 - i / irLen, 3);
+      d[i] = (Math.random() * 2 - 1) * env;
+    }
+  }
+  const conv = c.createConvolver();
+  conv.buffer = ir;
+  conv.normalize = true;
+
+  // Small pre-delay so early reflections are decorrelated from
+  // the dry hit — reads as spatial distance.
+  const pre = c.createDelay(0.2);
+  pre.delayTime.value = 0.03;
+
+  // Lowpass on the wet path so the tail is dark (cathedral, not tin can).
   const damp = c.createBiquadFilter();
   damp.type = 'lowpass';
-  damp.frequency.value = 2800;
+  damp.frequency.value = 3000;
   damp.Q.value = 0.5;
 
-  input.connect(d1);
-  input.connect(d2);
-  input.connect(d3);
-  input.connect(d4);
-  d1.connect(damp);
-  d2.connect(damp);
-  d3.connect(damp);
-  d4.connect(damp);
-  damp.connect(fb);
-  fb.connect(d1); fb.connect(d2); fb.connect(d3); fb.connect(d4);
-  damp.connect(wet).connect(output);
+  const wet = c.createGain();
+  wet.gain.value = 0.32;
+
+  input.connect(pre).connect(conv).connect(damp).connect(wet).connect(output);
 
   return { input };
 }
@@ -296,6 +318,64 @@ export function click() {
     g.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
     osc.connect(g).connect(out);
     osc.start(now); osc.stop(now + 0.25);
+  });
+}
+
+// Poking SENTINEL — bigger than a click, more resonant. Reads as
+// SENTINEL reacting to being touched: sub-thump + longer harmonic
+// ring above + a brief airy shimmer for movement. Everything goes
+// through the reverb so it sits in the room.
+let lastPokeAt = 0;
+export function poke() {
+  const nowT = performance.now();
+  if (nowT - lastPokeAt < 120) return;
+  lastPokeAt = nowT;
+  play((c, out) => {
+    const now = c.currentTime;
+
+    // (1) Sub thump — sine sweep 90 → 40 Hz over 400 ms. Body of
+    // the poke; feels like SENTINEL got tapped.
+    const sub = c.createOscillator();
+    sub.type = 'sine';
+    sub.frequency.setValueAtTime(90, now);
+    sub.frequency.exponentialRampToValueAtTime(40, now + 0.4);
+    const subG = c.createGain();
+    subG.gain.setValueAtTime(0, now);
+    subG.gain.linearRampToValueAtTime(0.42, now + 0.008);
+    subG.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
+    sub.connect(subG).connect(out);
+    sub.start(now); sub.stop(now + 0.55);
+
+    // (2) Harmonic ring — triangle up an octave, slower attack
+    // and longer decay. Reverb picks this up and creates a tail
+    // that lingers ~1 s. Reads as SENTINEL's body resonating.
+    const harm = c.createOscillator();
+    harm.type = 'triangle';
+    harm.frequency.value = 165; // E3
+    const harmFilt = c.createBiquadFilter();
+    harmFilt.type = 'lowpass'; harmFilt.frequency.value = 1200; harmFilt.Q.value = 0.8;
+    const harmG = c.createGain();
+    harmG.gain.setValueAtTime(0, now);
+    harmG.gain.linearRampToValueAtTime(0.18, now + 0.04);
+    harmG.gain.exponentialRampToValueAtTime(0.0001, now + 1.0);
+    harm.connect(harmFilt).connect(harmG).connect(out);
+    harm.start(now); harm.stop(now + 1.1);
+
+    // (3) Airy shimmer — very brief highpass noise burst at the
+    // moment of contact. Bright but tiny, sells the "impact" without
+    // adding a game-y click.
+    const buf = c.createBuffer(1, 512, c.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < 512; i++) d[i] = Math.random() * 2 - 1;
+    const src = c.createBufferSource(); src.buffer = buf;
+    const filt = c.createBiquadFilter();
+    filt.type = 'highpass'; filt.frequency.value = 4500; filt.Q.value = 0.7;
+    const g = c.createGain();
+    g.gain.setValueAtTime(0, now);
+    g.gain.linearRampToValueAtTime(0.08, now + 0.005);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+    src.connect(filt).connect(g).connect(out);
+    src.start(now); src.stop(now + 0.1);
   });
 }
 

@@ -754,23 +754,12 @@ export function initInteractions({
   // Click — poke SENTINEL + project card handoff
   // -----------------------------------------------------------
   const onClick = (e) => {
-    // Broad click SFX. Fire on any anchor / button / cursor-hover
-    // element the user actually clicked, EXCEPT the SFX toggle
-    // itself (main.js plays its own confirmation blip on unmute
-    // and we don't want double-triggering).
-    const t = e.target;
-    if (t && typeof t.closest === 'function') {
-      const clickable = t.closest('a, button, [data-cursor="hover"]');
-      if (clickable && clickable.id !== 'sfx-toggle') sfx.click();
-    }
-
-    // Poke — click within POKE_RADIUS of SENTINEL fires the big
-    // pulse + transient morph. Note: scene.js currently owns its
-    // own capture-phase poke handler (fires triggerBigPulse); the
-    // handler here adds the shape morph. Once Task 12.1 wires scene
-    // to defer to this module, the pulse call here becomes the sole
-    // source. For now, coexisting is safe — triggerBigPulse is
-    // idempotent-per-frame at the visual level (particles overlap).
+    // Poke — check FIRST so the dedicated SENTINEL reaction sound
+    // fires without the broad-click handler also playing sfx.click.
+    // Click within POKE_RADIUS of SENTINEL fires the big pulse +
+    // transient morph. scene.js has its own capture-phase poke
+    // handler that also fires triggerBigPulse; both are safe to
+    // stack since the visual is idempotent per frame.
     if (companion && getBuddyPos) {
       const bp = getBuddyPos();
       if (bp) {
@@ -780,10 +769,19 @@ export function initInteractions({
           if (shapes && !prefersReduced) {
             shapes.nudge('orb', { transient: true, duration: POKE_MORPH_MS / 1000 });
           }
-          sfx.click();
+          sfx.poke();
           return;
         }
       }
+    }
+
+    // Broad click SFX. Fire on any anchor / button / cursor-hover
+    // element the user actually clicked, EXCEPT the SFX toggle
+    // itself (main.js plays its own confirmation blip on unmute).
+    const t = e.target;
+    if (t && typeof t.closest === 'function') {
+      const clickable = t.closest('a, button, [data-cursor="hover"]');
+      if (clickable && clickable.id !== 'sfx-toggle') sfx.click();
     }
 
     // Project card click — fire documents_out toward the card and
@@ -803,7 +801,8 @@ export function initInteractions({
         companion.emit('documents_out');
       }
       companion.triggerBigPulse();
-      sfx.click();
+      // No inline sfx.click() — the broad handler above already
+      // played it for the project-card click.
     }
   };
 
