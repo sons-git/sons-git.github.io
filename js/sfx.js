@@ -754,14 +754,30 @@ export function verify() {
 }
 
 // -------------------------------------------------------------
-// Ambient — "outer space" bed
+// Ambient — Hans Zimmer-style scifi atmosphere (v4).
 //
-// Three layers, no drone:
-//   (1) Sub sine at 40 Hz with 12 s LFO on amplitude (breathing).
-//   (2) Wind — pink-ish noise through slowly-sweeping bandpass.
-//   (3) Sparse random bells — FM chimes on a minor pentatonic
-//       scale, fire on random intervals (4-14 s), each with a
-//       long reverb tail via the SFX space send.
+// Design brief: think Interstellar / Dune / Blade Runner 2049 —
+// sustained harmonic layers, deep sub, high shimmer, huge reverb,
+// no percussion, no bells, no plinks. Movement comes from slow
+// LFOs on filters + individual voice amplitudes, not from active
+// note events. Chord stays on Am9 (A minor 9) throughout; the
+// perceived movement is entirely textural.
+//
+// Layers:
+//   (1) Sub bass drone at 55 Hz (A1). 15-second amp LFO — feels
+//       like the room breathing.
+//   (2) Chord pad — 5 detuned sawtooth voices spelling Am9
+//       (A2 C3 E3 G3 B3) through a shared lowpass with 28-second
+//       filter LFO. Each voice has its own slow amp LFO at a
+//       different rate so their relative levels drift — creates
+//       constant motion inside a static chord.
+//   (3) High shimmer — highpass-filtered noise at ~4 kHz with a
+//       35-second amp LFO. Very quiet. Adds "void sparkle."
+//   (4) Choir-like formant — filtered noise passing through two
+//       resonant bandpass filters tuned to vowel-ish formants.
+//       Fades in slowly and drifts.
+//
+// Master music bus stays at 0.022 for balance with SFX (0.14).
 // -------------------------------------------------------------
 function startAmbient() {
   if (ambientHandles) return;
@@ -769,109 +785,190 @@ function startAmbient() {
   if (!c || !musicBus) return;
 
   const now = c.currentTime;
+  const fadeIn = 8; // long lift-in so unmute isn't jarring
 
-  // (1) Sub bass — 40 Hz sine with amplitude LFO.
+  // -------- (1) Sub bass drone --------
   const sub = c.createOscillator();
   sub.type = 'sine';
-  sub.frequency.value = 40;
-  const subGain = c.createGain();
-  subGain.gain.value = 0;
+  sub.frequency.value = 55; // A1
+
   const subLfo = c.createOscillator();
   subLfo.type = 'sine';
-  subLfo.frequency.value = 1 / 12; // one cycle per 12 s
+  subLfo.frequency.value = 1 / 15;
   const subLfoGain = c.createGain();
-  subLfoGain.gain.value = 0.55;
-  subLfo.connect(subLfoGain).connect(subGain.gain);
-  // Bias the LFO up so gain oscillates around 0.55, not around 0.
+  subLfoGain.gain.value = 0.28;
+  subLfo.connect(subLfoGain);
+
+  const subGain = c.createGain();
   subGain.gain.setValueAtTime(0, now);
-  subGain.gain.linearRampToValueAtTime(0.55, now + 6);
+  subGain.gain.linearRampToValueAtTime(0.5, now + fadeIn);
+  subLfoGain.connect(subGain.gain);
   sub.connect(subGain).connect(musicBus);
 
-  // (2) Wind — filtered noise with slow bandpass sweep.
-  const noiseBuf = c.createBuffer(1, c.sampleRate * 6, c.sampleRate);
-  const nd = noiseBuf.getChannelData(0);
+  // -------- (2) Am9 chord pad --------
+  // Frequencies for A2 C3 E3 G3 B3 — the 1 b3 5 b7 9 of Am.
+  const chordFreqs = [110.0, 130.81, 164.81, 196.0, 246.94];
+  // Very tiny detune per voice for slow beating.
+  const detunes    = [ +2, -3, +1, -2, +3 ]; // cents
+
+  // Shared lowpass filter with slow LFO for the chord bus. This is
+  // where the "movement" of a static chord comes from — you're
+  // hearing the same notes but the filter uncovers different
+  // partials over time.
+  const chordFilt = c.createBiquadFilter();
+  chordFilt.type = 'lowpass';
+  chordFilt.Q.value = 4;
+  const chordFiltLfo = c.createOscillator();
+  chordFiltLfo.type = 'sine';
+  chordFiltLfo.frequency.value = 1 / 28;
+  const chordFiltLfoGain = c.createGain();
+  chordFiltLfoGain.gain.value = 480;
+  chordFiltLfo.connect(chordFiltLfoGain).connect(chordFilt.frequency);
+  chordFilt.frequency.value = 700; // centre; LFO swings ±480
+
+  const chordBus = c.createGain();
+  chordBus.gain.setValueAtTime(0, now);
+  chordBus.gain.linearRampToValueAtTime(0.45, now + fadeIn);
+  chordFilt.connect(chordBus).connect(musicBus);
+
+  const voices = chordFreqs.map((freq, i) => {
+    // Two sawtooths per voice, slightly detuned, mixed together —
+    // gives the pad thickness without being buzzy.
+    const oscA = c.createOscillator();
+    const oscB = c.createOscillator();
+    oscA.type = 'sawtooth';
+    oscB.type = 'sawtooth';
+    oscA.frequency.value = freq;
+    oscB.frequency.value = freq;
+    oscA.detune.value =  detunes[i];
+    oscB.detune.value = -detunes[i] * 1.3;
+
+    const voiceGain = c.createGain();
+    // Each voice's individual amp LFO — different rate per voice
+    // so the group breathes asynchronously. Base around 0.55, swing
+    // ±0.15, so no voice ever fully drops out.
+    const vLfo = c.createOscillator();
+    vLfo.type = 'sine';
+    vLfo.frequency.value = 1 / (18 + i * 4); // 18, 22, 26, 30, 34 s
+    const vLfoGain = c.createGain();
+    vLfoGain.gain.value = 0.15;
+    vLfo.connect(vLfoGain);
+
+    voiceGain.gain.setValueAtTime(0, now);
+    voiceGain.gain.linearRampToValueAtTime(0.55, now + fadeIn);
+    vLfoGain.connect(voiceGain.gain);
+
+    oscA.connect(voiceGain);
+    oscB.connect(voiceGain);
+    voiceGain.connect(chordFilt);
+
+    return { oscA, oscB, voiceGain, vLfo };
+  });
+
+  // -------- (3) High shimmer --------
+  const shimBuf = c.createBuffer(1, c.sampleRate * 6, c.sampleRate);
+  const sd = shimBuf.getChannelData(0);
+  for (let i = 0; i < sd.length; i++) sd[i] = (Math.random() * 2 - 1) * 0.4;
+  const shim = c.createBufferSource();
+  shim.buffer = shimBuf;
+  shim.loop = true;
+
+  const shimFilt = c.createBiquadFilter();
+  shimFilt.type = 'highpass';
+  shimFilt.frequency.value = 3800;
+  shimFilt.Q.value = 1;
+
+  const shimLfo = c.createOscillator();
+  shimLfo.type = 'sine';
+  shimLfo.frequency.value = 1 / 35;
+  const shimLfoGain = c.createGain();
+  shimLfoGain.gain.value = 0.06;
+  shimLfo.connect(shimLfoGain);
+
+  const shimGain = c.createGain();
+  shimGain.gain.setValueAtTime(0, now);
+  shimGain.gain.linearRampToValueAtTime(0.08, now + fadeIn);
+  shimLfoGain.connect(shimGain.gain);
+  shim.connect(shimFilt).connect(shimGain).connect(musicBus);
+
+  // -------- (4) Choir-like formant --------
+  const chorBuf = c.createBuffer(1, c.sampleRate * 6, c.sampleRate);
+  const cd = chorBuf.getChannelData(0);
   let x = 0;
-  for (let i = 0; i < nd.length; i++) {
+  for (let i = 0; i < cd.length; i++) {
     x = (x + (Math.random() * 2 - 1) * 0.1) * 0.98;
-    nd[i] = x;
+    cd[i] = x;
   }
-  const noise = c.createBufferSource();
-  noise.buffer = noiseBuf;
-  noise.loop = true;
+  const chor = c.createBufferSource();
+  chor.buffer = chorBuf;
+  chor.loop = true;
 
-  const nfilt = c.createBiquadFilter();
-  nfilt.type = 'bandpass';
-  nfilt.Q.value = 2;
-  const nlfo = c.createOscillator();
-  nlfo.type = 'sine';
-  nlfo.frequency.value = 1 / 17; // 17 s cycle
-  const nlfoGain = c.createGain();
-  nlfoGain.gain.value = 600;
-  nlfo.connect(nlfoGain).connect(nfilt.frequency);
-  nfilt.frequency.value = 1200;
+  // Two bandpass filters in series — an "ah" formant (F1 ~700 Hz,
+  // F2 ~1100 Hz). Gives the noise a vocal-ish colour.
+  const chorF1 = c.createBiquadFilter();
+  chorF1.type = 'bandpass'; chorF1.Q.value = 8; chorF1.frequency.value = 720;
+  const chorF2 = c.createBiquadFilter();
+  chorF2.type = 'bandpass'; chorF2.Q.value = 8; chorF2.frequency.value = 1100;
 
-  const ng = c.createGain();
-  ng.gain.setValueAtTime(0, now);
-  ng.gain.linearRampToValueAtTime(0.4, now + 6);
-  noise.connect(nfilt).connect(ng).connect(musicBus);
+  // Very slow LFO drifts the formants slightly — reads as vowel
+  // shift from "ah" to "oh" and back.
+  const chorLfo = c.createOscillator();
+  chorLfo.type = 'sine';
+  chorLfo.frequency.value = 1 / 42;
+  const chorLfoGain = c.createGain();
+  chorLfoGain.gain.value = 140;
+  chorLfo.connect(chorLfoGain).connect(chorF1.frequency);
+  const chorLfoGain2 = c.createGain();
+  chorLfoGain2.gain.value = 220;
+  chorLfo.connect(chorLfoGain2).connect(chorF2.frequency);
 
+  const chorGain = c.createGain();
+  chorGain.gain.setValueAtTime(0, now);
+  chorGain.gain.linearRampToValueAtTime(0.18, now + fadeIn);
+  chor.connect(chorF1).connect(chorF2).connect(chorGain).connect(musicBus);
+
+  // -------- start everything --------
   sub.start(now); subLfo.start(now);
-  noise.start(now); nlfo.start(now);
-
-  // (3) Sparse bell events — random intervals, minor pentatonic
-  // frequencies (A minor: A E G B C -> pick some notes 3 octaves up).
-  const bellNotes = [880, 1046.5, 1174.7, 1318.5, 1568.0, 1760.0];
-  let bellTimerId = null;
-
-  function scheduleNextBell() {
-    const delayMs = 4000 + Math.random() * 10000; // 4-14 s
-    bellTimerId = setTimeout(() => {
-      if (!ambientHandles) return; // stopped mid-schedule
-      // Bell hits the SFX space send so it echoes long.
-      const nowB = c.currentTime;
-      const freq = bellNotes[Math.floor(Math.random() * bellNotes.length)];
-      const car = c.createOscillator();
-      const mod = c.createOscillator();
-      const modGain = c.createGain();
-      const outGain = c.createGain();
-      car.type = 'sine'; mod.type = 'sine';
-      car.frequency.value = freq;
-      mod.frequency.value = freq * 0.68;
-      modGain.gain.value = freq * 0.68 * 2.4;
-      mod.connect(modGain).connect(car.frequency);
-      outGain.gain.setValueAtTime(0, nowB);
-      outGain.gain.linearRampToValueAtTime(0.09, nowB + 0.02);
-      outGain.gain.exponentialRampToValueAtTime(0.0001, nowB + 1.8);
-      car.connect(outGain).connect(toSfxBus()); // route to reverb
-      car.start(nowB); mod.start(nowB);
-      car.stop(nowB + 2.0); mod.stop(nowB + 2.0);
-      scheduleNextBell();
-    }, delayMs);
-  }
-  scheduleNextBell();
+  chordFiltLfo.start(now);
+  voices.forEach(v => { v.oscA.start(now); v.oscB.start(now); v.vLfo.start(now); });
+  shim.start(now); shimLfo.start(now);
+  chor.start(now); chorLfo.start(now);
 
   ambientHandles = {
-    sub, subLfo, subGain, noise, nlfo, ng,
-    getBellTimerId: () => bellTimerId,
-    clearBellTimer: () => { if (bellTimerId) clearTimeout(bellTimerId); },
+    sub, subLfo, subGain,
+    chordFiltLfo, chordBus, voices,
+    shim, shimLfo, shimGain,
+    chor, chorLfo, chorGain,
   };
 }
 
 function stopAmbient() {
   if (!ambientHandles || !ctx) return;
   const now = ctx.currentTime;
-  const { sub, subLfo, subGain, noise, nlfo, ng, clearBellTimer } = ambientHandles;
-  clearBellTimer();
-  subGain.gain.cancelScheduledValues(now);
-  subGain.gain.setValueAtTime(subGain.gain.value, now);
-  subGain.gain.linearRampToValueAtTime(0, now + 0.4);
-  ng.gain.cancelScheduledValues(now);
-  ng.gain.setValueAtTime(ng.gain.value, now);
-  ng.gain.linearRampToValueAtTime(0, now + 0.4);
+  const {
+    sub, subLfo, subGain,
+    chordFiltLfo, chordBus, voices,
+    shim, shimLfo, shimGain,
+    chor, chorLfo, chorGain,
+  } = ambientHandles;
+
+  const fadeOut = 0.6;
+  [subGain, chordBus, shimGain, chorGain].forEach(g => {
+    g.gain.cancelScheduledValues(now);
+    g.gain.setValueAtTime(g.gain.value, now);
+    g.gain.linearRampToValueAtTime(0, now + fadeOut);
+  });
+
   setTimeout(() => {
-    try { sub.stop(); subLfo.stop(); noise.stop(); nlfo.stop(); } catch (_e) {}
+    try {
+      sub.stop(); subLfo.stop();
+      chordFiltLfo.stop();
+      voices.forEach(v => { v.oscA.stop(); v.oscB.stop(); v.vLfo.stop(); });
+      shim.stop(); shimLfo.stop();
+      chor.stop(); chorLfo.stop();
+    } catch (_e) {}
     ambientHandles = null;
-  }, 500);
+  }, (fadeOut + 0.1) * 1000);
 }
 
 // -------------------------------------------------------------
