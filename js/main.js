@@ -562,9 +562,11 @@ function boot() {
       // hero copy, but competes with content in later sections. Hide
       // as soon as SENTINEL crosses out of hero (section index > 0).
       if (statusEl) statusEl.classList.toggle('is-hidden', idx > 0);
-      // Radar-sweep sound on section change. Cheap way to reinforce
-      // the "SENTINEL is now looking at this" moment.
-      sfx.whoosh();
+      // Per-section entry cue — distinct sound per SENTINEL mode.
+      // See sfx.enterSection docstring for the palette. Hero (idx 0)
+      // fires as the loader clears which is fine; audio unlock waits
+      // for the user gesture so nothing plays before consent.
+      sfx.enterSection(idx);
     },
   });
   initCardHover();

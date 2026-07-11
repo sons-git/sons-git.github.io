@@ -310,6 +310,303 @@ export function tick() {
 }
 
 // -------------------------------------------------------------
+// Section entry cues — one distinct sound per section, matching the
+// mode SENTINEL switches into. Called from main.js onSectionChange
+// in place of the generic whoosh. Each is 300-600 ms.
+//
+//   0 hero       — soft wake pad
+//   1 approach   — analyze arpeggio + rising bandpass
+//   2 journey    — spool-up whine (SENTINEL's spin accelerates)
+//   3 work       — targeting lock click
+//   4 skills     — buffer-load tick cascade
+//   5 recognition— stamp thunk + bell tail
+//   6 vision     — bloom triad (perfect fifth open)
+//   7 contact    — descending listen pad + hum onset
+// -------------------------------------------------------------
+
+export function enterHero() {
+  play((c, out) => {
+    // Very soft — Hero is already a big visual moment, don't stack
+    // a loud sound on it. Just a warm pad swell.
+    const now = c.currentTime;
+    const dur = 0.7;
+    const osc = c.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(110, now);
+    osc.frequency.exponentialRampToValueAtTime(220, now + dur);
+    const g = c.createGain();
+    g.gain.setValueAtTime(0, now);
+    g.gain.linearRampToValueAtTime(0.1, now + 0.2);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+    osc.connect(g).connect(out);
+    osc.start(now); osc.stop(now + dur + 0.02);
+  });
+}
+
+export function enterApproach() {
+  play((c, out) => {
+    // Analytical: rising bandpass noise + short 3-note ascending
+    // arpeggio (data queried).
+    const now = c.currentTime;
+    const dur = 0.35;
+    const buf = c.createBuffer(1, Math.floor(c.sampleRate * dur), c.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * 0.6;
+    const src = c.createBufferSource(); src.buffer = buf;
+    const filt = c.createBiquadFilter();
+    filt.type = 'bandpass'; filt.Q.value = 8;
+    filt.frequency.setValueAtTime(400, now);
+    filt.frequency.exponentialRampToValueAtTime(1800, now + dur);
+    const g = c.createGain();
+    g.gain.setValueAtTime(0, now);
+    g.gain.linearRampToValueAtTime(0.28, now + 0.05);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+    src.connect(filt).connect(g).connect(out);
+    src.start(now); src.stop(now + dur);
+
+    // Ascending arpeggio (data probes)
+    const notes = [1200, 1600, 2400];
+    notes.forEach((freq, i) => {
+      fmVoice(c, out, {
+        carrierFreq: freq, modFreq: freq * 0.5, modIndex: 1.4,
+        attack: 0.003, decay: 0.08, peak: 0.11,
+      });
+    });
+  });
+}
+
+export function enterJourney() {
+  // Spool-up whine — matches the ring's rotSpeed jump from ~1.6 to
+  // ~5.5 in trace mode. Rising sine sweep + widening noise, resolves
+  // at the top pitch. Duration ~600 ms so the audio ramp lines up
+  // with the ring visibly accelerating.
+  play((c, out) => {
+    const now = c.currentTime;
+    const dur = 0.6;
+
+    // Sine glissando 200 → 2600 Hz.
+    const osc = c.createOscillator();
+    osc.type = 'sawtooth'; // sawtooth for that "servo/motor" edge
+    osc.frequency.setValueAtTime(200, now);
+    osc.frequency.exponentialRampToValueAtTime(2600, now + dur);
+    const oscFilt = c.createBiquadFilter();
+    oscFilt.type = 'lowpass';
+    oscFilt.frequency.setValueAtTime(600, now);
+    oscFilt.frequency.exponentialRampToValueAtTime(4000, now + dur);
+    oscFilt.Q.value = 6;
+    const og = c.createGain();
+    og.gain.setValueAtTime(0, now);
+    og.gain.linearRampToValueAtTime(0.16, now + 0.08);
+    og.gain.linearRampToValueAtTime(0.10, now + dur - 0.05);
+    og.gain.exponentialRampToValueAtTime(0.0001, now + dur + 0.1);
+    osc.connect(oscFilt).connect(og).connect(out);
+    osc.start(now); osc.stop(now + dur + 0.15);
+
+    // Widening noise (spinning airflow)
+    const buf = c.createBuffer(1, Math.floor(c.sampleRate * dur), c.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * 0.5;
+    const src = c.createBufferSource(); src.buffer = buf;
+    const nfilt = c.createBiquadFilter();
+    nfilt.type = 'bandpass';
+    nfilt.frequency.setValueAtTime(500, now);
+    nfilt.frequency.exponentialRampToValueAtTime(3400, now + dur);
+    nfilt.Q.value = 4;
+    const ng = c.createGain();
+    ng.gain.setValueAtTime(0, now);
+    ng.gain.linearRampToValueAtTime(0.14, now + 0.1);
+    ng.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+    src.connect(nfilt).connect(ng).connect(out);
+    src.start(now); src.stop(now + dur);
+
+    // Short "lock" tone at the top of the sweep — SENTINEL settles
+    // into the fast-spin state.
+    setTimeout(() => {
+      play((cc, oo) => {
+        fmVoice(cc, oo, {
+          carrierFreq: 2600, modFreq: 1300, modIndex: 1.2,
+          attack: 0.003, decay: 0.14, peak: 0.10,
+        });
+      });
+    }, dur * 1000 - 20);
+  });
+}
+
+export function enterWork() {
+  play((c, out) => {
+    // Targeting lock — sharp servo click + brief high burst.
+    // Feels like a mechanism engaging.
+    const now = c.currentTime;
+
+    // Servo click (short bandpass noise)
+    const buf = c.createBuffer(1, 256, c.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < 256; i++) d[i] = Math.random() * 2 - 1;
+    const src = c.createBufferSource(); src.buffer = buf;
+    const filt = c.createBiquadFilter();
+    filt.type = 'bandpass'; filt.frequency.value = 1800; filt.Q.value = 8;
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.5, now);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
+    src.connect(filt).connect(g).connect(out);
+    src.start(now); src.stop(now + 0.05);
+
+    // FM click tone (targeting)
+    fmVoice(c, out, {
+      carrierFreq: 900, modFreq: 450, modIndex: 3.0,
+      attack: 0.001, decay: 0.12, peak: 0.22,
+    });
+
+    // High confirmation tick
+    setTimeout(() => {
+      play((cc, oo) => {
+        const nb = cc.createBuffer(1, 200, cc.sampleRate);
+        const nd = nb.getChannelData(0);
+        for (let i = 0; i < 200; i++) nd[i] = Math.random() * 2 - 1;
+        const ns = cc.createBufferSource(); ns.buffer = nb;
+        const nf = cc.createBiquadFilter();
+        nf.type = 'bandpass'; nf.frequency.value = 4200; nf.Q.value = 6;
+        const ng = cc.createGain();
+        const t = cc.currentTime;
+        ng.gain.setValueAtTime(0.25, t);
+        ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.03);
+        ns.connect(nf).connect(ng).connect(oo);
+        ns.start(t); ns.stop(t + 0.04);
+      });
+    }, 120);
+  });
+}
+
+export function enterSkills() {
+  // Buffer-load tick cascade — 5 rapid ticks stepping up in pitch,
+  // matches the parse mode's dense/granular character.
+  play((c, out) => {
+    const freqs = [2400, 2800, 3200, 3600, 4200];
+    freqs.forEach((freq, i) => {
+      setTimeout(() => {
+        play((cc, oo) => {
+          const now = cc.currentTime;
+          const buf = cc.createBuffer(1, 200, cc.sampleRate);
+          const d = buf.getChannelData(0);
+          for (let j = 0; j < 200; j++) d[j] = Math.random() * 2 - 1;
+          const src = cc.createBufferSource(); src.buffer = buf;
+          const filt = cc.createBiquadFilter();
+          filt.type = 'bandpass'; filt.frequency.value = freq; filt.Q.value = 8;
+          const g = cc.createGain();
+          g.gain.setValueAtTime(0.2, now);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + 0.03);
+          src.connect(filt).connect(g).connect(oo);
+          src.start(now); src.stop(now + 0.03);
+        });
+      }, i * 55);
+    });
+  });
+}
+
+export function enterRecognition() {
+  play((c, out) => {
+    // Metallic stamp: low thud + broadband snap + bell tail.
+    const now = c.currentTime;
+
+    // Low thud (stamp landing)
+    fmVoice(c, out, {
+      carrierFreq: 140, modFreq: 60, modIndex: 3.0,
+      attack: 0.002, decay: 0.18, peak: 0.35,
+    });
+
+    // Broadband snap (impact)
+    const buf = c.createBuffer(1, 512, c.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < 512; i++) d[i] = Math.random() * 2 - 1;
+    const src = c.createBufferSource(); src.buffer = buf;
+    const filt = c.createBiquadFilter();
+    filt.type = 'bandpass'; filt.frequency.value = 2200; filt.Q.value = 4;
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.35, now);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
+    src.connect(filt).connect(g).connect(out);
+    src.start(now); src.stop(now + 0.05);
+
+    // Bell tail (metal ringing)
+    setTimeout(() => {
+      play((cc, oo) => {
+        fmVoice(cc, oo, {
+          carrierFreq: 1800, modFreq: 900, modIndex: 2.8,
+          attack: 0.003, decay: 0.55, peak: 0.10,
+        });
+      });
+    }, 60);
+  });
+}
+
+export function enterVision() {
+  // Bloom triad — root + fifth + octave, staggered 80 ms apart,
+  // each with reverb. Reads as SENTINEL broadcasting outward.
+  play((c, out) => {
+    const notes = [
+      { car: 880,  mod: 440, idx: 1.6, peak: 0.14 },
+      { car: 1320, mod: 660, idx: 1.4, peak: 0.11 },
+      { car: 1760, mod: 880, idx: 1.2, peak: 0.09 },
+    ];
+    notes.forEach((v, i) => {
+      setTimeout(() => {
+        play((cc, oo) => {
+          fmVoice(cc, oo, {
+            carrierFreq: v.car, modFreq: v.mod, modIndex: v.idx,
+            attack: 0.006, decay: 0.6, peak: v.peak,
+          });
+        });
+      }, i * 80);
+    });
+  });
+}
+
+export function enterContact() {
+  play((c, out) => {
+    // Listen — descending gentle sine + soft noise fade. The
+    // "settling in to await" moment.
+    const now = c.currentTime;
+    const dur = 0.5;
+
+    const osc = c.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, now);
+    osc.frequency.exponentialRampToValueAtTime(220, now + dur);
+    const g = c.createGain();
+    g.gain.setValueAtTime(0, now);
+    g.gain.linearRampToValueAtTime(0.14, now + 0.06);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+    osc.connect(g).connect(out);
+    osc.start(now); osc.stop(now + dur + 0.02);
+
+    // Soft noise (breath fading in)
+    const buf = c.createBuffer(1, Math.floor(c.sampleRate * dur), c.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * 0.25;
+    const src = c.createBufferSource(); src.buffer = buf;
+    const filt = c.createBiquadFilter();
+    filt.type = 'bandpass'; filt.frequency.value = 900; filt.Q.value = 1.5;
+    const ng = c.createGain();
+    ng.gain.setValueAtTime(0, now);
+    ng.gain.linearRampToValueAtTime(0.06, now + 0.15);
+    ng.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+    src.connect(filt).connect(ng).connect(out);
+    src.start(now); src.stop(now + dur);
+  });
+}
+
+// Dispatcher — main.js calls this on section change instead of
+// generic whoosh. Falls back to whoosh for unknown indices.
+const SECTION_ENTER = [
+  enterHero, enterApproach, enterJourney, enterWork,
+  enterSkills, enterRecognition, enterVision, enterContact,
+];
+export function enterSection(idx) {
+  const fn = SECTION_ENTER[idx | 0];
+  if (fn) fn(); else whoosh();
+}
+
+// -------------------------------------------------------------
 // Section-specific SFX
 // -------------------------------------------------------------
 
