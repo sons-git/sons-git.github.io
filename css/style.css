@@ -1367,10 +1367,14 @@ main { position: relative; z-index: 2; }
 .timeline--editorial .tl-item::before {
   content: '';
   position: absolute;
-  /* Dot 14x14, left 174 → visual centre at (174 + 7) = 181 px, which
-     matches the rail centre at (180 + 1) = 181 px. Vertical position
-     is driven by --dot-y (year-text centre, computed in
+  /* Dot 14x14 total (border-box), left 174 → visual centre at
+     (174 + 7) = 181 px, matching the rail centre at (180 + 1) = 181.
+     `box-sizing: border-box` is critical — with the default content
+     box the 2 px border sits OUTSIDE the 14 px, making the dot 18 px
+     wide and its centre 2 px right of the rail. Vertical position is
+     driven by --dot-y (year-text centre, computed in
      alignTimelineRail); -7 px centres the 14 px dot on that point. */
+  box-sizing: border-box;
   left: 174px;
   top: calc(var(--dot-y, 22px) - 7px);
   width: 14px;

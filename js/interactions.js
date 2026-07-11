@@ -476,7 +476,7 @@ export function initInteractions({
       // Journey behaviour is hover-driven: SENTINEL's ring only
       // spools up while the user hovers a timeline item, and the
       // spinning "wuh-wuh" plays only during that same window.
-      if (companion && companion.setSpeedBoost) companion.setSpeedBoost(4.5);
+      if (companion && companion.setSpeedBoost) companion.setSpeedBoost(2.5);
       if (!prefersReduced) {
         const existing = activeSpins.get(el);
         if (!existing || !existing.spin) {

@@ -61,10 +61,10 @@ export const MODES = {
     beacon: CYAN, beaconFreq: 3.5,
   },
   trace: {
-    // Base rotSpeed matches other reading modes. The Journey fast
-    // spin (~5.5) is now hover-driven — interactions.js calls
-    // companion.setSpeedBoost() when a .tl-item is hovered.
-    rotSpeed: 1.20, pulseAmp: 0.03, pulseFreq: 1.3,
+    // Base rotSpeed keeps SENTINEL clearly rotating at rest without
+    // dominating; the Journey fast-spin comes from `setSpeedBoost`
+    // (called by interactions.js on .tl-item hover).
+    rotSpeed: 2.20, pulseAmp: 0.03, pulseFreq: 1.3,
     distortion: 0.22, noiseSpeed: 0.80,
     scanOpacity: 0.65, ambientParticles: 0.10,
     scale: 1.00, hue: 0.25, cursorTilt: 0.20,
@@ -625,10 +625,15 @@ export function createCompanion() {
     // -----------------------------------------------------------------
     shapeSystem.update(dt);
 
-    // Shell rotation (hover boost)
+    // Shell rotation (hover boost + section speed boost).
+    // `speedBoost` is the hover-driven multiplier set by
+    // interactions.js — normally 1, ramps to ~2.5 on Journey timeline
+    // hover so the whole SENTINEL visibly accelerates alongside the
+    // ring, not just the ring by itself.
     const boost = 1 + hoveredForConsumers * 0.75;
-    shell.rotation.y += dt * cur.rotSpeed * 2   * boost;
-    shell.rotation.x += dt * cur.rotSpeed * 0.9 * boost;
+    const shellBoost = boost * speedBoost;
+    shell.rotation.y += dt * cur.rotSpeed * 2   * shellBoost;
+    shell.rotation.x += dt * cur.rotSpeed * 0.9 * shellBoost;
 
     // Cursor tilt on the whole root — nudges toward cursor direction
     // (curious, not shy). The `1 + proximityPull * 0.6` multiplier is
