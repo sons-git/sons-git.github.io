@@ -631,6 +631,16 @@ function boot() {
     });
   }
 
+  // Debounce SFX side effects on section change. Fast scrolling
+  // through Hero → Contact fires onSectionChange for every
+  // intermediate section, and each `setSectionDrone` teardown takes
+  // ~500 ms. Without a debounce, a rapid pass would stack 6 drones
+  // fading simultaneously and pile up 6 one-shot entry sounds.
+  // Visual updates (HUD label, status hide) still fire instantly;
+  // only the audio pipeline waits for the scroll to settle.
+  let sfxSettleTimer = null;
+  let sfxLastFiredIdx = -1;
+
   initScroll({
     onSectionChange: (idx) => {
       const label = SENTINEL_LABELS[Math.min(idx, SENTINEL_LABELS.length - 1)];
@@ -641,19 +651,15 @@ function boot() {
           labelEl.style.opacity = '1';
         }, 140);
       }
-      // Corner status widget (SYS / LOC / TIME) is a hero-only piece
-      // of chrome — it sets the "computer terminal" mood alongside the
-      // hero copy, but competes with content in later sections. Hide
-      // as soon as SENTINEL crosses out of hero (section index > 0).
       if (statusEl) statusEl.classList.toggle('is-hidden', idx > 0);
-      // Per-section entry cue — a brief swell matched to what
-      // SENTINEL is about to do. Section drone (below) is what
-      // sustains for the rest of the time in that section.
-      sfx.enterSection(idx);
-      // Continuous per-section drone — very subtle sustained texture
-      // that plays for as long as the user stays in this section.
-      // Fades out cleanly when the next section's drone takes over.
-      sfx.setSectionDrone(idx);
+
+      clearTimeout(sfxSettleTimer);
+      sfxSettleTimer = setTimeout(() => {
+        if (idx === sfxLastFiredIdx) return;
+        sfxLastFiredIdx = idx;
+        sfx.enterSection(idx);
+        sfx.setSectionDrone(idx);
+      }, 180);
     },
   });
   initCardHover();
