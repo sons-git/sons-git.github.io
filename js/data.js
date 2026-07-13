@@ -178,7 +178,7 @@ export const experience = [
   },
 ];
 
-// ---------- Projects (rich, biography-full sourced) ----------
+// ---------- Projects (rich, sourced from Jul 2026 resume) ----------
 export const projects = [
   {
     id: 'design-agent',
@@ -188,7 +188,7 @@ export const projects = [
     year: '2026',
     role: 'AI Engineer',
     stack: ['Agent Architecture', 'Prompt Mgmt', 'Enterprise APIs', 'Cloud', 'Auth', 'Caching'],
-    summary: 'Compressed multi-week manufacturing feasibility evaluations to minutes while keeping engineer-in-the-loop review.',
+    summary: 'Compressed manufacturing-feasibility evaluations from multi-week engineering reviews to minutes. ~100 ms production latency, 85% accuracy on evaluation benchmarks.',
     sections: [
       {
         heading: 'Business context',
@@ -200,11 +200,95 @@ export const projects = [
       },
       {
         heading: 'My contributions',
-        body: 'Developed the UI. Integrated enterprise APIs. Configured AI agent tools. Prompt engineering and prompt management. Debugged agent behaviour. Resolved UAT issues. Implemented response caching. Built secure authentication and token exchange. Deployed application components to the cloud. Supported production. Contributed to the architectural design of the planned multi-agent evolution.',
+        body: 'Owned prompt engineering and prompt management governing agent reasoning consistency across long conversation traces. Contributed to high-level system architecture and led low-level design across UI, agent tooling, and integration components. Delivered the front-end end-to-end. Built enterprise integration across APIs, structured data sources, secure auth and token-exchange flows. Implemented response caching and reliability instrumentation. Deployed to cloud infrastructure and supported production traffic with client-stakeholder engagement across UAT and post-release.',
       },
       {
         heading: 'What it taught me',
         body: 'Enterprise AI is a discipline, not a technology. Valuable AI systems require combining artificial intelligence with software engineering, cloud infrastructure, security, enterprise integration, deployment, and domain expertise. Model quality matters; everything around the model matters more.',
+      },
+    ],
+  },
+  {
+    id: 'multi-agent',
+    title: 'Configurable Multi-Agent AI Platform',
+    subtitle: 'Framework-free Python orchestrator, built from first principles',
+    badge: 'Personal Research',
+    year: '2025 — Present',
+    role: 'Sole author',
+    stack: ['Multi-Agent', 'MCP', 'YAML Config', 'FastAPI', 'Docker', 'LiteLLM'],
+    summary: '~60,000 LOC Python + ~13,000 LOC YAML. Nine coordination protocols, six-tier memory system, MCP integration, autonomous director. CLI + REST + Streamlit surfaces.',
+    sections: [
+      {
+        heading: 'Why build this?',
+        body: 'After exposure to enterprise AI and the rise of agentic frameworks, I wanted to understand how collaborative AI systems actually function beneath existing abstractions. Rather than adopting AWS Agent-Squad, LangChain, AutoGen, or OpenAI Swarm as-is, I built from scratch — same design space, no external agent-framework dependency, to develop first-principles understanding of orchestration.',
+      },
+      {
+        heading: 'What it supports',
+        body: 'YAML-configurable agents, prompts, tools, workflows, and memory. Nine coordination protocols — sequential, parallel, hierarchical, handoff, consensus, auction, broadcast, swarm, group-chat. Six-tier memory system: short-term, long-term (Postgres + Redis-vector RAG), shared blackboard, episodic, semantic, phase-context. Native Model Context Protocol integration with a 16-tool built-in SWE suite plus standard MCP servers.',
+      },
+      {
+        heading: 'The autonomous director',
+        body: 'Ingests an end-user prompt, runs scope triage, plans phases across ~25 product / engineering / QA / DevOps roles, and writes a runnable project scaffold to disk under governed HITL checkpoints. Three delivery surfaces (CLI, FastAPI REST, Streamlit UI) over a Docker Compose stack, reachable through 11 LLM providers via a LiteLLM abstraction with Azure OpenAI + Azure AI Foundry fully wired.',
+      },
+      {
+        heading: 'Why it matters',
+        body: 'The value is not in the technologies used but in what it demonstrates — first-principles thinking, systems thinking, architectural curiosity, experimentation, a preference for configurable systems, and continuous learning. The scale (256 Python files, ~30 pytest suites including live integration) reflects sustained personal investment beyond the shape of any single course.',
+      },
+    ],
+  },
+  {
+    id: 'ontology-engine',
+    title: 'Ontology Engine',
+    subtitle: '"Palantir Foundry for Vietnamese SMEs"',
+    badge: 'Personal Research',
+    year: '2025 — Present',
+    role: 'Sole author',
+    stack: ['Ontology Inference', 'ReAct Agent', 'Hypothesis PBT', 'Claude Sonnet 4', 'PhoBERT'],
+    summary: 'Framework-free engine that ingests messy multi-source business data and auto-infers a typed business ontology. ~28,300 source LOC · ~57,500 test LOC · ~3,140 pytest tests (~2× test-to-source ratio).',
+    sections: [
+      {
+        heading: 'The inference pipeline',
+        body: 'A 6-stage cascade — Profile → SemanticType → TableRole → Link → EntityResolve → Instantiate — with a 3-tier alias-dict → embedding → LLM cascade per stage, and multiplicative confidence propagation across the resulting ontology. Ingests Excel and Postgres sources with typed business semantics.',
+      },
+      {
+        heading: 'Framework-free ReAct agent',
+        body: 'A hand-rolled ~150-line ReAct loop — no LangChain, no LangGraph — reasoning over an auto-generated typed tool catalog. LLMs never see raw SQL, enforced as an executable invariant by a static AST import guard. Coordinates 4 specialised LLM roles (planner, reasoner, schema architect, formatter) across Anthropic Claude Sonnet 4 + Haiku with an OpenAI GPT-4o swap-in path and cross-provider fallback.',
+      },
+      {
+        heading: 'Vietnamese-first, vertical packs',
+        body: 'Three vertical packs (Retail, Services, Distribution) shipped as declarative YAML — 5 object types, 4 link types, 3 derived metrics per pack. Vietnamese-first locale: VND, dd/mm/yyyy, Tết lunar-holiday regressors, PhoBERT embeddings.',
+      },
+      {
+        heading: 'Roadmap grounded in research',
+        body: 'Five active specs — kinetic layer (actions / lifecycles / roles), structural discovery, statistical fabric, prescriptive reasoning, ReAct hardening — grounded in Palantir Foundry, DEMO, REA, Kambhampati LLM-Modulo (ICML 2024), pm4py process mining, and Prophet forecasting. Reflects a commitment to build AI infrastructure Vietnamese SMEs could actually use.',
+      },
+    ],
+  },
+  {
+    id: 'vnx-engine',
+    title: 'VNX Engine',
+    subtitle: 'AI-powered Vietnamese equities intelligence platform',
+    badge: 'Personal Research',
+    year: '2025 — Present',
+    role: 'Sole author',
+    stack: ['LangGraph', 'PyTorch', 'GAT + LSTM', 'SHAP', 'GCP Vertex AI', 'React'],
+    summary: 'End-to-end research platform: 12-node LangGraph debate + 12 ML model families + RL portfolio allocator + paper-trading engine. ~37,400 Python LOC, 1,657 test functions.',
+    sections: [
+      {
+        heading: 'Multi-agent debate architecture',
+        body: 'A 12-node LangGraph debate graph — 4 analyst nodes (technical / sentiment / news / fundamentals), 3-round bull ↔ bear ↔ research-manager debates, a trader bridge, 3-way risk debate (aggressive / conservative / neutral), and a portfolio-manager gate emitting a 5-class rating (buy / overweight / hold / underweight / sell) per ticker.',
+      },
+      {
+        heading: 'Twelve ML model families',
+        body: 'Ensemble of LSTM, Transformer, TFT, XGBoost, GAT (torch-geometric), LSTM-GNN hybrid, ViT, Wavelet, HMM regime, FinBERT, PhoBERT, and a VD-MEAC reinforcement-learning portfolio allocator — with regime-conditional weighting of ensemble outputs. Explainability across model families via SHAP TreeExplainer, permutation importance, and TFT attention-weight interpretation.',
+      },
+      {
+        heading: 'Coverage + deployment',
+        body: 'Trained per-ticker across 401 HOSE tickers + HNX + UPCOM with an ingestion layer for OHLCV, order-book depth, fundamentals, news, social forums, insider filings, and macro data (SBV rates, CPI, FX, SJC gold). Deployed on GCP Vertex AI + Cloud Run Jobs on T4 GPUs; backtests span 2024-02 through 2026-06 across 5 iterations of the trading agent (v5 an agentic ReAct loop over dynamic trading tools).',
+      },
+      {
+        heading: 'Delivery surfaces',
+        body: 'Served through a React dashboard, Chainlit chat, and FastAPI backend. Full-stack combining production ML engineering with front-end and API delivery on a scale that lives well outside a course project.',
       },
     ],
   },
@@ -215,12 +299,12 @@ export const projects = [
     badge: 'MVP · Rackspace',
     year: '2025',
     role: 'AI Engineer',
-    stack: ['Conversational AI', 'Workflow Logic', 'Reliability', 'Debugging', 'Structured Search'],
-    summary: 'Intelligent copilot that retrieves enterprise data, searches structured databases, and guides investment evaluation through conversational workflows.',
+    stack: ['Conversational AI', 'Workflow Logic', 'Geospatial Reasoning', 'Structured Search'],
+    summary: 'MVP copilot guiding investment teams through property evaluation using orchestrated multi-step workflows over a ~100k-record property dataset.',
     sections: [
       {
         heading: 'What it does',
-        body: 'Assists commercial real estate professionals throughout the property evaluation process. Retrieves property information from enterprise data sources, searches structured organisational databases, answers questions about property characteristics, calculates distances between properties and nearby amenities, assists with property evaluation, and provides contextual information to support investment decisions.',
+        body: 'Assists commercial real estate professionals throughout the property evaluation process. Retrieves property information from enterprise data sources, searches structured databases spanning ~100,000 records, answers questions about property characteristics, computes geospatial reasoning for property-to-amenity distances, and guides investment evaluation via conversational workflows.',
       },
       {
         heading: 'The engineering challenge',
@@ -228,7 +312,7 @@ export const projects = [
       },
       {
         heading: 'My contributions',
-        body: 'Implemented conversational workflows. Configured agent behaviour. Developed workflow logic for business-specific interactions. Debugged conversational behaviour. Improved workflow reliability. Tested user interactions. Validated AI responses. Supported iterative MVP delivery.',
+        body: 'Designed and implemented conversational workflows over the ~100k-record property dataset. Shaped agent behaviour and business-specific workflow logic through iterative product discovery with client stakeholders. Improved conversational reliability and response validation across successive MVP iterations.',
       },
       {
         heading: 'What it taught me',
@@ -237,30 +321,30 @@ export const projects = [
     ],
   },
   {
-    id: 'multi-agent',
-    title: 'Configurable Multi-Agent Orchestration Platform',
-    subtitle: 'Built from first principles',
-    badge: 'Independent Research',
-    year: '2024 — Present',
-    role: 'Sole author',
-    stack: ['Multi-Agent', 'MCP', 'YAML Config', 'Orchestration Strategies', 'Extensibility'],
-    summary: 'YAML-configurable agents, prompts, tools, workflows and memory. Native Model Context Protocol integration. Sequential, concurrent, iterative, and swarm strategies.',
+    id: 'aha',
+    title: 'AI Health Assistant (AHA)',
+    subtitle: 'Voice-first medical assistant · Bachelor Capstone × FPT partnership',
+    badge: 'Bachelor Capstone',
+    year: '2025',
+    role: 'PM + developer + DevOps',
+    stack: ['DSPy', 'FastAPI', 'Qdrant', 'OpenAI Realtime', 'Cloud Run', 'SPLADE + e5'],
+    summary: 'Voice-first medically-scoped AI assistant ingesting text, audio, images, documents. Two FastAPI microservices, DSPy-orchestrated, 9 integrated models, 27 API endpoints.',
     sections: [
       {
-        heading: 'Why build this?',
-        body: 'After exposure to enterprise AI and the rise of agentic frameworks, I wanted to understand how collaborative AI systems actually function beneath existing abstractions. Rather than immediately adopting popular orchestration frameworks, I chose to build my own. The objective was educational — orchestration principles from first principles.',
+        heading: 'Two-service architecture',
+        body: 'Data / orchestration plane (21 endpoints: auth, users, conversation store, dynamic worker queue, task classification, RAG retrieval, multimodal ingestion) and inference plane (6 endpoints: DSPy LLM / RAG / Summarizer, Whisper STT, OpenAI TTS, Realtime voice agent), coordinated through a shared Redis config store.',
       },
       {
-        heading: 'Design philosophy',
-        body: 'Flexibility over convenience. Rather than embedding orchestration logic directly into code, behaviour is configured through external YAML files. This reflects a broader preference for configurable, maintainable software architectures.',
+        heading: 'Hybrid retrieval + agent coordination',
+        body: 'Hybrid retrieval — dense (multilingual-e5-small, 384-dim) + sparse (SPLADE-cocondenser) embeddings fused via Reciprocal Rank Fusion (k=60) on Qdrant, per-user collections, 50-message rolling window, specialty-named medical knowledge stores per condition. Coordinated 5 agent / model roles: BART-MNLI zero-shot classifier routing to medical / code / off-topic, DSPy ChainOfThought multimodal responder, DSPy Predict summarizer, and an OpenAI Realtime voice agent.',
       },
       {
-        heading: 'What it supports',
-        body: 'Multiple orchestration strategies (sequential, concurrent, iterative, swarm-based). Configurable agents, prompts, tools, workflows, memory. Model Context Protocol (MCP) integration. An extensible architecture for future experimentation.',
+        heading: 'Two-way voice + multimodal ingest',
+        body: 'Live voice loop via WebSocket over the OpenAI Realtime API — PCM16 @ 24 kHz, server VAD, inline Whisper transcription, with pyannote VAD + speaker-diarization-3.1 for multi-speaker clinical audio. Ingested 8+ file types and 8 audio formats with automatic VAD → diarization → per-segment Whisper transcription.',
       },
       {
-        heading: 'Why it matters',
-        body: 'Unlike personal projects that reproduce online tutorials, this originated from genuine intellectual curiosity. Its value is not in the technologies used but in what it demonstrates — first-principles thinking, systems thinking, architectural curiosity, experimentation, a preference for configurable systems, and continuous learning.',
+        heading: 'My ownership',
+        body: 'Team of 5; owned PM + developer + DevOps + stakeholder / business-management responsibilities. Balanced technical feasibility with usability under capstone constraints and an industry partnership with FPT — the largest IT firm in Vietnam.',
       },
     ],
   },
@@ -272,7 +356,7 @@ export const projects = [
     year: '2025',
     role: 'Team member',
     stack: ['AWS', 'GenAI', 'Automation', 'Rapid Prototyping', 'Multi-modal'],
-    summary: 'Automated news retrieval, image generation, caption generation, LinkedIn publishing, and a monitoring UI — shipped under hackathon constraints.',
+    summary: 'End-to-end AI content pipeline — news retrieval, image generation, caption generation, automated LinkedIn publishing, workflow monitoring. Placed 2nd overall.',
     sections: [
       {
         heading: 'The build',
@@ -285,34 +369,6 @@ export const projects = [
       {
         heading: 'The bigger point',
         body: 'Reinforced my interest in combining multiple AI capabilities into cohesive end-to-end systems, rather than treating each model or service in isolation.',
-      },
-    ],
-  },
-  {
-    id: 'ai-nurse',
-    title: 'AI Nurse Assistant',
-    subtitle: 'Capstone project · RMIT Vietnam',
-    badge: 'Bachelor Capstone',
-    year: '2025',
-    role: 'Full-stack + AI',
-    stack: ['Conversational AI', 'Full-Stack', 'Prompt Design', 'System Integration', 'Agile'],
-    summary: 'Personalized conversational AI for healthcare information access. Full-stack build with emphasis on reliability, UX, and end-to-end software engineering around an AI capability.',
-    sections: [
-      {
-        heading: 'Why this project',
-        body: 'The healthcare domain presents unique challenges for AI: users expect responses that are not only useful but reliable, understandable, and appropriately contextualized. Rather than treating this as an AI demonstration, I approached it as building a complete software system around an AI capability.',
-      },
-      {
-        heading: 'Objectives',
-        body: 'Design a personalized nursing assistant. Investigate conversational AI for healthcare support. Apply software engineering principles throughout development. Build a functional end-to-end application. Collaborate effectively within a multidisciplinary team.',
-      },
-      {
-        heading: 'What I did',
-        body: 'Contributed to both technical implementation and broader system design — system architecture discussions, implementation planning, iterative development, testing, and refinement. Balanced technical feasibility with usability within capstone constraints.',
-      },
-      {
-        heading: 'What it taught me',
-        body: 'AI applications must be evaluated as complete systems rather than isolated models. User experience is often as important as model capability. Reliable engineering requires repeated testing. Team communication significantly influences project success.',
       },
     ],
   },
