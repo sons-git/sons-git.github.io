@@ -86,7 +86,17 @@ export function initScene(canvas, { onProgress, onReady } = {}) {
   // R11.1, R11.2, E6.
   // -----------------------------------------------------------
   const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-  let prefersReduced = mediaQuery.matches;
+  // Effective reduced-motion state is `mediaReduced || userReduced`.
+  // The media query reflects the OS/browser setting; `userReduced`
+  // is the manual "Reduce Effects" toggle wired from main.js. Both
+  // routes converge on the same `prefersReduced` local, which is
+  // captured in the render-loop closure below.
+  let mediaReduced = mediaQuery.matches;
+  let userReduced = false;
+  try {
+    userReduced = window.localStorage.getItem('fx-reduced') === 'true';
+  } catch (_e) { /* localStorage may be disabled */ }
+  let prefersReduced = mediaReduced || userReduced;
 
   // -----------------------------------------------------------
   // textRegions — created once. Survives WebGL context loss + restore.
@@ -135,8 +145,8 @@ export function initScene(canvas, { onProgress, onReady } = {}) {
   // -----------------------------------------------------------
   // Reduced-motion change — re-apply within one frame (R11.2).
   // -----------------------------------------------------------
-  function onMediaChange(e) {
-    prefersReduced = !!e.matches;
+  function applyReduced() {
+    prefersReduced = mediaReduced || userReduced;
     if (ctx) {
       if (ctx.companion) ctx.companion.setPrefersReduced(prefersReduced);
       if (ctx.scanner)   ctx.scanner.setPrefersReduced(prefersReduced);
@@ -148,6 +158,20 @@ export function initScene(canvas, { onProgress, onReady } = {}) {
     layoutMotion = initLayoutMotion({ prefersReduced });
     reveal       = initReveal({ prefersReduced });
   }
+  function onMediaChange(e) {
+    mediaReduced = !!e.matches;
+    applyReduced();
+  }
+  // Exported on the scene handle below so main.js can drive it from
+  // the Reduce Effects toggle. Persists to localStorage so the choice
+  // sticks across reloads.
+  function setReducedEffects(v) {
+    userReduced = !!v;
+    try { window.localStorage.setItem('fx-reduced', userReduced ? 'true' : 'false'); }
+    catch (_e) { /* ignore */ }
+    applyReduced();
+  }
+  function getReducedEffects() { return userReduced; }
   // Support both modern addEventListener and legacy addListener.
   if (typeof mediaQuery.addEventListener === 'function') {
     mediaQuery.addEventListener('change', onMediaChange);
@@ -246,6 +270,12 @@ export function initScene(canvas, { onProgress, onReady } = {}) {
     get scanner() { return ctx ? ctx.scanner : null; },
     get scanFan() { return ctx ? ctx.scanFan : null; },
     textRegions,
+    // Reduce Effects toggle — main.js wires the nav button to this.
+    // `setReducedEffects(true)` forces the scene into reduced-motion
+    // mode (same code path as the OS `prefers-reduced-motion` query),
+    // persists to localStorage, and rebuilds layoutMotion + reveal.
+    setReducedEffects,
+    getReducedEffects,
     dispose() {
       if (disposed) return;
       disposed = true;

@@ -736,6 +736,32 @@ function boot() {
     // eslint-disable-next-line no-console
     console.error('[boot] initModal threw:', err);
   }
+
+  // Reduce Effects toggle — wires the nav button to the scene's
+  // reduced-motion override. On click, toggles the internal state,
+  // rebuilds layoutMotion + reveal with the new flag, and updates
+  // the button's aria-pressed + `.is-reduced` class. Persists to
+  // localStorage so the choice sticks across reloads.
+  const fxBtn = document.getElementById('fx-toggle');
+  if (fxBtn && sceneHandle && sceneHandle.setReducedEffects) {
+    const syncFxBtn = () => {
+      const reduced = sceneHandle.getReducedEffects
+        ? sceneHandle.getReducedEffects()
+        : false;
+      fxBtn.classList.toggle('is-reduced', reduced);
+      fxBtn.setAttribute('aria-pressed', reduced ? 'true' : 'false');
+      fxBtn.setAttribute('aria-label',
+        reduced ? 'Restore visual effects' : 'Reduce visual effects');
+    };
+    syncFxBtn();
+    fxBtn.addEventListener('click', () => {
+      const next = !(sceneHandle.getReducedEffects
+        ? sceneHandle.getReducedEffects()
+        : false);
+      sceneHandle.setReducedEffects(next);
+      syncFxBtn();
+    });
+  }
 }
 
 if (document.readyState === 'loading') {

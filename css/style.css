@@ -428,6 +428,49 @@ button { font-family: inherit; }
   .nav__sfx-icon { width: 14px; height: 14px; }
 }
 
+/* Reduce-visual-effects toggle — sits next to the SFX toggle. Icon
+   is a Gemini-style 4-point sparkle. Active (effects ON) shows the
+   sparkle in accent colour; pressed (effects reduced) mutes it so
+   the button reads as "off". */
+.nav__fx {
+  margin-left: 8px;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--accent);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 200ms var(--ease), border-color 200ms var(--ease);
+}
+.nav__fx:hover,
+.nav__fx:focus-visible {
+  color: var(--accent-2);
+  border-color: var(--accent);
+  outline: none;
+}
+.nav__fx-icon {
+  width: 16px;
+  height: 16px;
+}
+.nav__fx.is-reduced {
+  color: var(--text-mute);
+  border-color: var(--border);
+}
+.nav__fx.is-reduced:hover {
+  color: var(--text);
+  border-color: var(--text-mute);
+}
+
+@media (max-width: 720px) {
+  .nav__fx { margin-left: 6px; width: 28px; height: 28px; }
+  .nav__fx-icon { width: 14px; height: 14px; }
+}
+
 /* Companion HUD — DOM label that follows the 3D drone.
    JS drives the transform every frame; CSS just provides the styling
    and a fade-in on load. */

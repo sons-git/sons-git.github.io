@@ -111,6 +111,20 @@
         <path d="M13.5 7l4 6 M17.5 7l-4 6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
       </svg>
     </button>
+    <button id="fx-toggle" class="nav__fx" type="button"
+            aria-label="Reduce visual effects" aria-pressed="false"
+            title="Reduce visual effects (helps on slower devices)"
+            data-cursor="hover">
+      <svg class="nav__fx-icon" viewBox="0 0 20 20" aria-hidden="true">
+        <!-- Gemini-style 4-point sparkle. Two curved lenses (vertical
+             + horizontal) meeting at centre. Filled = effects on;
+             dims to a muted outline when reduced. -->
+        <path d="M10 2 C 10.9 5.9, 10.9 8.1, 10 10 C 9.1 8.1, 9.1 5.9, 10 2 Z" fill="currentColor"/>
+        <path d="M10 18 C 10.9 14.1, 10.9 11.9, 10 10 C 9.1 11.9, 9.1 14.1, 10 18 Z" fill="currentColor"/>
+        <path d="M2 10 C 5.9 9.1, 8.1 9.1, 10 10 C 8.1 10.9, 5.9 10.9, 2 10 Z" fill="currentColor"/>
+        <path d="M18 10 C 14.1 9.1, 11.9 9.1, 10 10 C 11.9 10.9, 14.1 10.9, 18 10 Z" fill="currentColor"/>
+      </svg>
+    </button>
   </header>
 
   <!-- Side rail: scroll progress + section indicator -->
