@@ -181,7 +181,7 @@ export const experience = [
 // ---------- Projects (rich, sourced from Jul 2026 resume + steering) ----------
 // Order: Rackspace production first (Design Agent hero), then Real Estate
 // MVP pair, then personal research projects (Multi-Agent → Ontology → VNX),
-// then academic × industry (AHA), then hackathon (AWS). Each project's
+// then academic × industry (AHA), then the AWS Agentic AI Hackathon. Each project's
 // `sections` array powers the modal case study — richer for personal
 // projects since the source material (project-*.md steering) is deeper.
 export const projects = [
@@ -363,25 +363,25 @@ export const projects = [
   },
   {
     id: 'aws-hackathon',
-    title: 'AWS Generative AI Hackathon',
-    subtitle: 'End-to-end AI content workflow',
-    badge: 'Top 2 · 2025',
+    title: 'AWS Agentic AI Hackathon',
+    subtitle: 'AWS Generative AI Innovation Center — Partner Innovation Alliance',
+    badge: 'Top 2 Finalist · 2025',
     year: '2025',
     role: 'Team member',
-    stack: ['AWS', 'GenAI', 'Automation', 'Rapid Prototyping', 'Multi-modal'],
-    summary: 'End-to-end AI content pipeline — news retrieval, image generation, caption generation, automated LinkedIn publishing, workflow monitoring. Placed 2nd overall.',
+    stack: ['Multi-Agent Design', 'AWS Bedrock', 'AWS Lambda', 'Amazon S3', 'Agent Orchestration'],
+    summary: 'Multi-agent LinkedIn content pipeline built entirely on AWS. Four specialist agents coordinated by an orchestrator. Placed second overall.',
     sections: [
       {
-        heading: 'The build',
-        body: 'A complete AI-powered content generation workflow. It retrieved current news, generated AI-created images, produced accompanying captions, published finished content to LinkedIn, and provided a UI for triggering and monitoring the workflow.',
+        heading: 'What we built',
+        body: 'A multi-agent content pipeline for LinkedIn. A search agent consolidates tech news; a content-reviewer agent drafts a post from the consolidated feed; an image-generation agent gets prompted from the draft; then an orchestrator reviews the whole package before it goes live. Four agents, one supervisor, one clean handoff chain from raw news to published post.',
       },
       {
-        heading: 'What it demonstrated',
-        body: 'Rapid prototyping under significant time pressure. Cloud AI integration. Workflow automation. API integration. User-focused application design. Practical deployment thinking. The Top 2 placement validated the ability to turn ideas into functional AI systems fast.',
+        heading: 'Built entirely on AWS',
+        body: 'Foundation-model inference on Bedrock, agent runtime on Lambda, artefacts on S3. No cross-cloud glue, no hidden managed services — the full stack lived on AWS. For the Innovation Center panel this was the point: showing you can design agent coordination on their platform end-to-end.',
       },
       {
-        heading: 'The bigger point',
-        body: 'Reinforced my interest in combining multiple AI capabilities into cohesive end-to-end systems, rather than treating each model or service in isolation.',
+        heading: 'Why it placed',
+        body: 'The competition scored agentic design specifically — not "using an LLM," but coordinating multiple specialist agents into a system that behaves reliably. That framing matched exactly what I already reach for on personal builds. It was also my first serious agentic build, and reading back it foreshadows the multi-agent orchestrator I later wrote from scratch. Curiosity showed up early.',
       },
     ],
   },
@@ -480,7 +480,7 @@ export const skills = [
 // ---------- Recognition / certifications ----------
 export const recognition = [
   { kind: 'award',   issuer: 'RMIT Vietnam',    name: 'Professor Nguyen Van Dao Scholarship',   note: 'Sole recipient · 50% tuition · highest maths score in intake year' },
-  { kind: 'award',   issuer: 'AWS',             name: 'Generative AI Hackathon — Top 2',       note: '2025' },
+  { kind: 'award',   issuer: 'AWS',             name: 'Agentic AI Hackathon — Top 2 Finalist', note: 'Generative AI Innovation Center · 2025' },
   { kind: 'award',   issuer: 'RMIT Vietnam',    name: 'Top 5% of graduating BSc IT cohort',    note: 'GPA 3.6 / 4.0 · Sep 2025' },
   { kind: 'cert',    issuer: 'Microsoft Azure', name: 'Azure AI Engineer Associate',           note: 'AI-102',    link: 'https://learn.microsoft.com/api/credentials/share/en-us/TangSon-3785/59C6A596E733BA24?sharingId=35E44442CF27EF61' },
   { kind: 'cert',    issuer: 'Microsoft Azure', name: 'Azure Data Scientist Associate',        note: 'DP-100',    link: 'https://learn.microsoft.com/api/credentials/share/en-us/TangSon-3785/D0890BF3FCA9E93B?sharingId=35E44442CF27EF61' },
@@ -508,7 +508,7 @@ export const vision = {
 
 // ---------- Stats (used in hero + about) ----------
 export const stats = [
-  { num: 'Top 2',  label: 'AWS Generative AI Hackathon 2025' },
+  { num: 'Top 2',  label: 'AWS Agentic AI Hackathon 2025' },
   { num: 'Top 5%', label: 'RMIT Vietnam BSc IT cohort' },
   { num: '3.6',    sub: '/4.0', label: 'GPA — graduated Sep 2025' },
   { num: '50M+',   label: 'VND sponsorship secured as club president' },
