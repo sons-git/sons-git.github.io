@@ -178,7 +178,12 @@ export const experience = [
   },
 ];
 
-// ---------- Projects (rich, sourced from Jul 2026 resume) ----------
+// ---------- Projects (rich, sourced from Jul 2026 resume + steering) ----------
+// Order: Rackspace production first (Design Agent hero), then Real Estate
+// MVP pair, then personal research projects (Multi-Agent → Ontology → VNX),
+// then academic × industry (AHA), then hackathon (AWS). Each project's
+// `sections` array powers the modal case study — richer for personal
+// projects since the source material (project-*.md steering) is deeper.
 export const projects = [
   {
     id: 'design-agent',
@@ -209,90 +214,6 @@ export const projects = [
     ],
   },
   {
-    id: 'multi-agent',
-    title: 'Configurable Multi-Agent AI Platform',
-    subtitle: 'Framework-free Python orchestrator, built from first principles',
-    badge: 'Personal Research',
-    year: '2025 — Present',
-    role: 'Sole author',
-    stack: ['Multi-Agent', 'MCP', 'YAML Config', 'FastAPI', 'Docker', 'LiteLLM'],
-    summary: '~60,000 LOC Python + ~13,000 LOC YAML. Nine coordination protocols, six-tier memory system, MCP integration, autonomous director. CLI + REST + Streamlit surfaces.',
-    sections: [
-      {
-        heading: 'Why build this?',
-        body: 'After exposure to enterprise AI and the rise of agentic frameworks, I wanted to understand how collaborative AI systems actually function beneath existing abstractions. Rather than adopting AWS Agent-Squad, LangChain, AutoGen, or OpenAI Swarm as-is, I built from scratch — same design space, no external agent-framework dependency, to develop first-principles understanding of orchestration.',
-      },
-      {
-        heading: 'What it supports',
-        body: 'YAML-configurable agents, prompts, tools, workflows, and memory. Nine coordination protocols — sequential, parallel, hierarchical, handoff, consensus, auction, broadcast, swarm, group-chat. Six-tier memory system: short-term, long-term (Postgres + Redis-vector RAG), shared blackboard, episodic, semantic, phase-context. Native Model Context Protocol integration with a 16-tool built-in SWE suite plus standard MCP servers.',
-      },
-      {
-        heading: 'The autonomous director',
-        body: 'Ingests an end-user prompt, runs scope triage, plans phases across ~25 product / engineering / QA / DevOps roles, and writes a runnable project scaffold to disk under governed HITL checkpoints. Three delivery surfaces (CLI, FastAPI REST, Streamlit UI) over a Docker Compose stack, reachable through 11 LLM providers via a LiteLLM abstraction with Azure OpenAI + Azure AI Foundry fully wired.',
-      },
-      {
-        heading: 'Why it matters',
-        body: 'The value is not in the technologies used but in what it demonstrates — first-principles thinking, systems thinking, architectural curiosity, experimentation, a preference for configurable systems, and continuous learning. The scale (256 Python files, ~30 pytest suites including live integration) reflects sustained personal investment beyond the shape of any single course.',
-      },
-    ],
-  },
-  {
-    id: 'ontology-engine',
-    title: 'Ontology Engine',
-    subtitle: '"Palantir Foundry for Vietnamese SMEs"',
-    badge: 'Personal Research',
-    year: '2025 — Present',
-    role: 'Sole author',
-    stack: ['Ontology Inference', 'ReAct Agent', 'Hypothesis PBT', 'Claude Sonnet 4', 'PhoBERT'],
-    summary: 'Framework-free engine that ingests messy multi-source business data and auto-infers a typed business ontology. ~28,300 source LOC · ~57,500 test LOC · ~3,140 pytest tests (~2× test-to-source ratio).',
-    sections: [
-      {
-        heading: 'The inference pipeline',
-        body: 'A 6-stage cascade — Profile → SemanticType → TableRole → Link → EntityResolve → Instantiate — with a 3-tier alias-dict → embedding → LLM cascade per stage, and multiplicative confidence propagation across the resulting ontology. Ingests Excel and Postgres sources with typed business semantics.',
-      },
-      {
-        heading: 'Framework-free ReAct agent',
-        body: 'A hand-rolled ~150-line ReAct loop — no LangChain, no LangGraph — reasoning over an auto-generated typed tool catalog. LLMs never see raw SQL, enforced as an executable invariant by a static AST import guard. Coordinates 4 specialised LLM roles (planner, reasoner, schema architect, formatter) across Anthropic Claude Sonnet 4 + Haiku with an OpenAI GPT-4o swap-in path and cross-provider fallback.',
-      },
-      {
-        heading: 'Vietnamese-first, vertical packs',
-        body: 'Three vertical packs (Retail, Services, Distribution) shipped as declarative YAML — 5 object types, 4 link types, 3 derived metrics per pack. Vietnamese-first locale: VND, dd/mm/yyyy, Tết lunar-holiday regressors, PhoBERT embeddings.',
-      },
-      {
-        heading: 'Roadmap grounded in research',
-        body: 'Five active specs — kinetic layer (actions / lifecycles / roles), structural discovery, statistical fabric, prescriptive reasoning, ReAct hardening — grounded in Palantir Foundry, DEMO, REA, Kambhampati LLM-Modulo (ICML 2024), pm4py process mining, and Prophet forecasting. Reflects a commitment to build AI infrastructure Vietnamese SMEs could actually use.',
-      },
-    ],
-  },
-  {
-    id: 'vnx-engine',
-    title: 'VNX Engine',
-    subtitle: 'AI-powered Vietnamese equities intelligence platform',
-    badge: 'Personal Research',
-    year: '2025 — Present',
-    role: 'Sole author',
-    stack: ['LangGraph', 'PyTorch', 'GAT + LSTM', 'SHAP', 'GCP Vertex AI', 'React'],
-    summary: 'End-to-end research platform: 12-node LangGraph debate + 12 ML model families + RL portfolio allocator + paper-trading engine. ~37,400 Python LOC, 1,657 test functions.',
-    sections: [
-      {
-        heading: 'Multi-agent debate architecture',
-        body: 'A 12-node LangGraph debate graph — 4 analyst nodes (technical / sentiment / news / fundamentals), 3-round bull ↔ bear ↔ research-manager debates, a trader bridge, 3-way risk debate (aggressive / conservative / neutral), and a portfolio-manager gate emitting a 5-class rating (buy / overweight / hold / underweight / sell) per ticker.',
-      },
-      {
-        heading: 'Twelve ML model families',
-        body: 'Ensemble of LSTM, Transformer, TFT, XGBoost, GAT (torch-geometric), LSTM-GNN hybrid, ViT, Wavelet, HMM regime, FinBERT, PhoBERT, and a VD-MEAC reinforcement-learning portfolio allocator — with regime-conditional weighting of ensemble outputs. Explainability across model families via SHAP TreeExplainer, permutation importance, and TFT attention-weight interpretation.',
-      },
-      {
-        heading: 'Coverage + deployment',
-        body: 'Trained per-ticker across 401 HOSE tickers + HNX + UPCOM with an ingestion layer for OHLCV, order-book depth, fundamentals, news, social forums, insider filings, and macro data (SBV rates, CPI, FX, SJC gold). Deployed on GCP Vertex AI + Cloud Run Jobs on T4 GPUs; backtests span 2024-02 through 2026-06 across 5 iterations of the trading agent (v5 an agentic ReAct loop over dynamic trading tools).',
-      },
-      {
-        heading: 'Delivery surfaces',
-        body: 'Served through a React dashboard, Chainlit chat, and FastAPI backend. Full-stack combining production ML engineering with front-end and API delivery on a scale that lives well outside a course project.',
-      },
-    ],
-  },
-  {
     id: 'real-estate-copilot',
     title: 'Enterprise Real Estate Copilot',
     subtitle: 'Conversational decision-support for commercial real estate',
@@ -317,6 +238,142 @@ export const projects = [
       {
         heading: 'What it taught me',
         body: 'Successful enterprise AI assistants require considerably more than strong language models. Effective systems depend equally on workflow design, orchestration, integration, testing, and continuous refinement.',
+      },
+    ],
+  },
+  {
+    id: 'multi-agent',
+    title: 'Configurable Multi-Agent AI Platform',
+    subtitle: 'Framework-free Python orchestrator, built from first principles',
+    badge: 'Personal Research',
+    year: '2026',
+    role: 'Sole author',
+    stack: ['Multi-Agent', 'MCP', 'YAML Config', 'FastAPI', 'Docker', 'LiteLLM'],
+    summary: '~60k Python LOC + ~13k YAML across 371 files. Nine coordination protocols, six-tier memory, MCP integration with 16 built-in SWE tools, autonomous director. CLI + REST + Streamlit.',
+    sections: [
+      {
+        heading: 'Why build this',
+        body: 'After exposure to enterprise AI and the rise of agentic frameworks — LangChain, LangGraph, CrewAI, AutoGen, OpenAI Swarm, AWS Agent-Squad — I wanted to understand how collaborative AI systems actually function beneath the abstractions. Rather than adopt any of them, I built the same design space from scratch. No external agent-framework dependency. The goal was first-principles understanding of orchestration.',
+      },
+      {
+        heading: 'Architecture — 5-tier stack',
+        body: 'Entry tier (CLI runner, FastAPI REST on :8000, Streamlit UI). Core tier (Orchestrator, WorkflowEngine, ProtocolFactory). Executors — one per protocol plus a nested workflow package with scope triage → plan builder → lazy agent loader → supervisor controller → quality gate → HITL handler. Agents tier with an in-process MessageBus (pub/sub + request/response + topic subscription). Infra tier (LLM clients, DB, cache, embeddings, resilience: retry / rate-limit / circuit breaker, logging).',
+      },
+      {
+        heading: 'Nine coordination protocols',
+        body: 'Sequential, parallel, hierarchical, handoff, consensus, auction, broadcast, swarm, group-chat. Seven stable, two WIP (swarm, group-chat). Each executor lives in its own file with a shared interface. Redis blackboard auto-enabled for parallel / swarm / group-chat / consensus / auction so agents can share intermediate state without RPC round-trips.',
+      },
+      {
+        heading: 'Six-tier memory system',
+        body: 'ShortTermMemory (TTL cache). LongTermMemory (Postgres + Redis-vector RAG). SharedMemory (Redis blackboard). EpisodicMemory (episode consolidation). SemanticMemory (knowledge search with per-agent Markdown ingest). PhaseContextStore. Async everywhere — asyncio + asyncpg + aioredis.',
+      },
+      {
+        heading: 'MCP integration + 16-tool SWE suite',
+        body: 'Native Model Context Protocol client + a built-in MCP server exposing 16 software-engineering tools: write_code, read_code, validate_syntax, review_code, execute_code, run_tests, lint_code, format_code, create_artifact, list_artifacts, read_artifact, project_summary, insert_code, replace_lines, append_code, find_and_replace. Also compatible with standard MCP servers (filesystem, GitHub, Postgres, brave-search, gdrive).',
+      },
+      {
+        heading: 'The autonomous director',
+        body: 'Ingests an end-user prompt → clarifying questions (min 2 / max 4) → scope triage (threshold 0.65, rejects out-of-scope with a helpful message) → phase plan across ~25 roles (CEO, CTO, product analyst, UX / UI / accessibility, tech-lead, frontend / backend / DB / security engineers, DevOps / SRE, QA lead + manual / automation / performance / security testers, release manager, technical writer, deployment engineer, support liaison…) → writes runnable project scaffold to disk under `workspace/<name>/{docs, src/frontend, src/backend, src/infrastructure, tests}` with an artifact_manifest.json audit trail. For "build a crossword app" you get a runnable scaffold with HTML/CSS/JS + Docker + CI + tests.',
+      },
+      {
+        heading: 'LLM abstraction — 11 providers',
+        body: 'Single unified LiteLLM factory auto-detects provider from endpoint. Typed response wrappers (ChatCompletionResponse, UsageStats, ToolCall). Azure OpenAI + Azure AI Foundry fully tested with gpt-4o + text-embedding-3-small. Also reachable: OpenAI, Anthropic, AWS Bedrock, Google Vertex / Gemini, Ollama, LM Studio, vLLM, any OpenAI-compatible endpoint.',
+      },
+      {
+        heading: 'Scope stats — measured, not estimated',
+        body: '371 files total · 80,419 LOC. Python: 60,719 LOC across 256 files. YAML: 12,922 LOC across 78 config files (11 top-level workflows + 8 nested workflow packages). Markdown docs: 32 files, 6,270 lines. ~30 pytest files with live integration for Postgres, Redis vector, MCP, LLM providers, memory, and protocols. Full Docker Compose stack (Postgres 16, Redis Stack, MCP server) with healthchecks. GitHub Actions CI with ruff + mypy + bandit.',
+      },
+      {
+        heading: 'Why it matters',
+        body: 'The value is not the technologies but what it demonstrates — first-principles thinking, systems thinking, architectural curiosity, a preference for configurable over hardcoded. 256 Python files and ~30 test suites reflect sustained personal investment well beyond any course project.',
+      },
+    ],
+  },
+  {
+    id: 'ontology-engine',
+    title: 'Ontology Engine',
+    subtitle: '"Palantir Foundry for Vietnamese SMEs"',
+    badge: 'Personal Research',
+    year: '2026',
+    role: 'Sole author',
+    stack: ['Ontology Inference', 'ReAct Agent', 'Hypothesis PBT', 'Claude Sonnet 4', 'PhoBERT'],
+    summary: 'Framework-free engine that ingests messy business data and auto-infers a typed ontology, then lets a ReAct agent answer operational questions through an auto-generated typed tool catalog. ~28,300 source LOC · ~57,500 test LOC · ~3,140 pytest tests (~2× test-to-source ratio).',
+    sections: [
+      {
+        heading: 'The pitch',
+        body: 'A Python engine that ingests messy multi-source business data (Excel, Postgres), automatically infers a typed business ontology, and lets an LLM answer operational questions like "why did revenue fall last month?" through an auto-generated typed tool catalog. No dashboards, no analysts, no forward-deployed engineers — a small business connects its data and asks questions in Vietnamese or English.',
+      },
+      {
+        heading: 'Six-stage inference pipeline',
+        body: 'Profile → SemanticType → TableRole → Link → EntityResolve → Instantiate. Each stage runs a 3-tier cascade: alias-dict lookup → embedding similarity → LLM fallback. Confidence is multiplicative across stages — every property, link, and instance carries a confidence score. Below 0.3 the system explicitly caveats; above 0.7 it answers confidently.',
+      },
+      {
+        heading: 'Framework-free ReAct agent (~150 LOC)',
+        body: 'A hand-rolled ReAct loop — Thought → Action → Observation, capped at 10 iterations and 30 s per step. No LangChain, no LangGraph — TODO.md explicitly rejects them: "we already have all primitives, the loop is 150 lines, avoids dependency bloat." Reasons over an auto-generated typed Tool Catalog that is the single choke point between AI and data.',
+      },
+      {
+        heading: 'Static AST import guard',
+        body: 'LLMs never see raw SQL, never touch the store directly. `_import_guard.py` uses static AST analysis to enforce this as an executable invariant — rare to see architectural rules turned into testable, CI-enforced checks. When a new object type joins the pack, the tool catalog auto-generates `get_X`, `count_X`, `traverse_X` methods; the LLM only ever sees these typed tools.',
+      },
+      {
+        heading: 'Four specialized LLM roles',
+        body: 'ReAct agent (Tier 2, planning + answering, Sonnet-class model). LLM Reasoner (Tier 1, anomaly detection + causal decomposition, runs on data-sync triggers). LLM Schema Architect (Tier 1, proposes new ObjectType definitions when data doesn\'t fit a pack). LLM Formatter (Haiku-class, cheap synthesis). Coordinated across Anthropic Claude Sonnet 4 + Haiku with an OpenAI GPT-4o swap-in path and cross-provider fallback.',
+      },
+      {
+        heading: 'Vietnamese-first vertical packs',
+        body: 'Three vertical packs (Retail, Services, Distribution) shipped as declarative YAML — 5 object types, 4 link types with cardinality (`one_to_many`, `many_to_one`, `many_to_many`), 3 derived metrics per pack. Vietnamese-first locale everywhere: VND number formatting ("2.3 triệu"), dd/mm/yyyy dates, Tết lunar-holiday regressors, PhoBERT embeddings, diacritic-insensitive search. Not a generic template dressed up with translations.',
+      },
+      {
+        heading: 'Roadmap — the "business twin" pivot',
+        body: 'Five active specs define the next evolution — from "typed ontology + Q&A" (today) to a business twin capable of prescription and simulation. (1) Kinetic Layer: Action Types + Lifecycles + Roles from Palantir Foundry + DEMO. (2) Structural Discovery: HyFD / Hydra CFD & DC mining, pm4py object-centric process mining, Ditto entity resolution. (3) Statistical Fabric: STL + Prophet with Tết regressors, hierarchical Bayesian productivity profiles. (4) Prescriptive Reasoning: LLM-Modulo pattern (Kambhampati ICML 2024) — LLM formalizes, solver decides, LLM explains. (5) ReAct Hardening: confidence from tool outcomes, memory verification, general-purpose query capability.',
+      },
+      {
+        heading: 'Scope stats — measured, not estimated',
+        body: '~28,300 source LOC across 172 Python files. ~57,500 test LOC across 212 test files. ~3,140 pytest tests including hypothesis property-based. 2× test-to-source ratio — way past demo scale. 8 architectural layers with enforced import rules. 5 tool categories auto-generated from the ontology (get_*, count_*, traverse_*, metric_*, search) + 2 power tools (decompose_metric, filter_entities). ~5,800 LOC of deprecated / legacy code preserved under `_deprecated/` — evidence of iterative learning across v1 (regex classifier) → v2 (linear Plan-Execute-Format) → current ReAct.',
+      },
+    ],
+  },
+  {
+    id: 'vnx-engine',
+    title: 'VNX Engine',
+    subtitle: 'AI-powered Vietnamese equities intelligence platform',
+    badge: 'Personal Research',
+    year: '2026',
+    role: 'Sole author',
+    stack: ['LangGraph', 'PyTorch', 'GAT + LSTM', 'SHAP', 'GCP Vertex AI', 'React'],
+    summary: 'End-to-end platform: 12-node LangGraph debate + ReAct supervisor + 12 ML model families + RL portfolio allocator + paper-trading engine. ~37,400 Python LOC, 1,657 tests, ~5,700 frontend LOC.',
+    sections: [
+      {
+        heading: 'The pitch',
+        body: 'An AI-powered Vietnamese equities intelligence platform combining 12+ ML models, multi-agent LLM debate, NLP sentiment (VI + EN), reinforcement-learning portfolio allocation, and a paper-trading engine — exposed through a React dashboard, Chainlit chat, and FastAPI backend. Ask "should I buy FPT?" and get a bull/bear/risk debate, technical + fundamental + sentiment analysis, ML price signals, SHAP factor breakdown, and a 5-class rating with conviction level.',
+      },
+      {
+        heading: '12-node LangGraph debate graph',
+        body: '4 analyst nodes (technical / sentiment / news / fundamentals) → 3-round bull ↔ bear ↔ research-manager investment debates → trader bridge → 3-way risk debate (aggressive / conservative / neutral) → portfolio-manager gate emitting a 5-class rating (buy / overweight / hold / underweight / sell). Configurable N rounds per debate stage, conditional edges route based on round counter, compiled via `StateGraph.compile()` and streamed via `.stream()`.',
+      },
+      {
+        heading: 'ReAct supervisor + 6 sub-agents',
+        body: 'Primary chat mode: 1 top-level ReAct agent, 1 supervisor, 6 specialized sub-agents (analysis, comparison, debate, fundamentals, research, screening), 21 distinct agent prompt templates in `prompts/`. LangGraph 0.4 + `langgraph-supervisor` + `langgraph-checkpoint-sqlite` for persistent conversation memory.',
+      },
+      {
+        heading: 'Twelve ML model families',
+        body: 'LSTM, Transformer, TFT, XGBoost, GAT (torch-geometric), LSTM-GNN hybrid, ViT, Wavelet, HMM regime, FinBERT (English sentiment), PhoBERT (Vietnamese sentiment), VD-MEAC reinforcement-learning portfolio allocator. Regime-conditional weighting of ensemble outputs. Explainability across the ensemble via SHAP TreeExplainer for tree models, permutation importance for PyTorch models, TFT attention-weight interpretation.',
+      },
+      {
+        heading: 'Coverage — 401 tickers + 8 data sources',
+        body: 'Trained per-ticker across 401 HOSE tickers + HNX + UPCOM. Ingestion adapters: OHLCV (SSI FastConnect + TCBS + CafeF), Level 2 order-book depth, fundamentals (KBS Finance API), news (CafeF + VnExpress + Vietstock scrapers), social forums (F319, StockTraders, VnEconomy, FireAnt), insider filings, macro data (SBV rates, CPI, GDP, FX, SJC gold). Feature matrix: 23 columns per ticker (OHLCV + RSI, MACD, Bollinger, ADX, OBV, VWAP, rolling returns 1d/5d/20d, 20d vol, foreign flow ratio, sector momentum, market breadth).',
+      },
+      {
+        heading: 'Five iterations of the trader agent',
+        body: 'v1 → v2 → v4 → v5, culminating in v5 as an agentic ReAct loop where the LLM calls trading tools dynamically. Strategic Planner (monthly allocation) → Tactical Trader (3-day entries) → Auto Trader → Position Manager → Paper Engine. Simulated order execution against VN market fees, position tracking with ATR-based stops / take-profits, live P&L updates via WebSocket, persistent state in `paper_trading.json` + `vnx.db`. Backtests span 2024-02 through 2026-06.',
+      },
+      {
+        heading: 'Delivery — React + Chainlit + FastAPI',
+        body: 'React + TypeScript + Vite dashboard with 9 top-level views (Dashboard, MarketLandscape, MarketScanner, Intelligence, PaperTrading, Agents, Chat, AuditLog, Wizard). Chainlit conversational analyzer with tool-call visualizations, multi-agent debate summaries, SHAP factor breakdowns. FastAPI backend with 9 route modules + WebSocket broadcaster, JWT auth. Deployed on GCP Vertex AI + Cloud Run Jobs on T4 GPUs; Cloud Build pipeline.',
+      },
+      {
+        heading: 'Scope stats — measured, not estimated',
+        body: '~37,400 Python source LOC across 224 files. ~20,200 test LOC across 61 files with 1,657 test functions (property-based via Hypothesis). ~5,700 frontend LOC in TypeScript / TSX. 85 LangChain `@tool` functions. 5 LLM providers (OpenAI, Anthropic, Google Gemini, Ollama local, rule-based fallback). Actively developed prototype used for research and backtesting — not production-deployed.',
       },
     ],
   },
