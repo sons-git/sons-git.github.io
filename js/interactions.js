@@ -38,7 +38,7 @@ import * as sfx from './sfx.js';
 
 // Selectors we listen for at the delegation level. Kept as constants
 // so they're easy to audit against the task instructions.
-const SEL_PROJECT   = '.work__spotlight, .work__row, .card[data-project-id]';
+const SEL_PROJECT   = '.work__tile, .card[data-project-id]';
 const SEL_SKILL_TAG = '.skill-group li[data-related], .mf-list li[data-related]';
 const SEL_EMAIL     = '.contact__email, .contact-huge a';
 const SEL_CONTACT   = '.contact-card';
@@ -259,12 +259,10 @@ export function initInteractions({
     }
     if (shapes) shapes.nudge('shard', { transient: true, duration: 1.4 });
 
-    // Retarget scanner on ANY Work-section project hover (spotlight or
-    // row). The scanner is section-gated by orchestrator.setEnabled, so
-    // this is a no-op outside Work.
-    if (scanner
-        && (el.classList.contains('work__row')
-            || el.classList.contains('work__spotlight'))) {
+    // Retarget scanner on any Work-section tile hover. The scanner is
+    // section-gated by orchestrator.setEnabled, so this is a no-op
+    // outside Work.
+    if (scanner && el.classList.contains('work__tile')) {
       scanner.setTarget(rect);
     }
 
@@ -289,25 +287,18 @@ export function initInteractions({
   }
 
   /**
-   * Sibling projects — every peer .work__row inside the same
-   * <ol class="work__list"> plus the .work__spotlight in the same
+   * Sibling projects — every peer .work__tile inside the same
    * #work-grid. Falls back to querySelectorAll for stand-alone cards.
    */
   function getSiblingProjects(el) {
-    const list = el.closest('.work__list');
     const grid = el.closest('#work-grid, .work--editorial');
     const out = new Set();
-    if (list) {
-      list.querySelectorAll('.work__row').forEach((s) => { if (s !== el) out.add(s); });
-    }
     if (grid) {
-      grid.querySelectorAll('.work__spotlight, .work__row').forEach((s) => {
+      grid.querySelectorAll('.work__tile').forEach((s) => {
         if (s !== el) out.add(s);
       });
     }
     if (out.size === 0) {
-      // Stand-alone cards elsewhere (e.g., recognition list) —
-      // dim other project cards on the page as a fallback.
       document.querySelectorAll('.card[data-project-id]').forEach((s) => {
         if (s !== el) out.add(s);
       });

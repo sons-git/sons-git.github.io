@@ -1513,158 +1513,131 @@ main { position: relative; z-index: 2; }
 /* -------------------------------------------------------------
    §3 Work — Editorial spotlight + reading list (R9.3, R9.8)
 ------------------------------------------------------------- */
+/* Bento grid — 3-column tile layout, hero spans 2×2, rest flow.
+   Scales to any project count by adding rows. */
 .work--editorial {
   display: grid;
-  grid-template-columns: 7fr 5fr;
-  grid-auto-flow: initial;
-  grid-auto-rows: initial;
-  gap: 24px;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: minmax(220px, auto);
+  gap: 20px;
   align-items: stretch;
 }
 
-/* Spotlight — poster card */
-.work__spotlight {
-  padding: 48px 44px;
+/* Base tile — same visual language as .card but as a real bento cell. */
+.work__tile {
+  position: relative;
+  padding: 28px 28px 24px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  min-height: 560px;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.015);
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 260ms var(--ease),
+              border-color 260ms var(--ease),
+              background 260ms var(--ease);
 }
-.work__spotlight-eyebrow {
+.work__tile:hover {
+  transform: translateY(-3px);
+  border-color: rgba(110, 231, 249, 0.35);
+  background: rgba(110, 231, 249, 0.03);
+}
+
+/* Featured tile — 2 cols × 2 rows. Takes the top-left quadrant so
+   the two neighbouring tiles fill the right column of rows 1-2. */
+.work__tile.is-featured {
+  grid-column: span 2;
+  grid-row: span 2;
+  padding: 44px 40px 36px;
+  gap: 14px;
+}
+
+.work__tile-eyebrow {
   display: flex;
-  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   letter-spacing: 0.15em;
-  color: var(--accent);
   text-transform: uppercase;
 }
-.work__spotlight-badge { color: var(--accent); }
-.work__spotlight-year { color: var(--text-mute); }
-.work__spotlight-title {
+.work__tile-index { color: var(--accent); }
+.work__tile-badge { color: var(--text-dim); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.work__tile-year  { color: var(--text-mute); flex-shrink: 0; }
+.work__tile-title {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(28px, 3.4vw, 44px);
+  font-size: 20px;
   font-weight: 500;
-  letter-spacing: -0.025em;
-  line-height: 1.05;
-  margin: 8px 0 0;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  margin: 4px 0 0;
   color: var(--text);
 }
-.work__spotlight-subtitle {
-  font-size: 16px;
+.work__tile.is-featured .work__tile-title {
+  font-size: clamp(26px, 2.8vw, 40px);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+}
+.work__tile-subtitle {
+  font-size: 13px;
   color: var(--text-dim);
   margin: 0;
+  line-height: 1.45;
 }
-.work__spotlight-summary {
-  font-size: 17px;
+.work__tile.is-featured .work__tile-subtitle {
+  font-size: 15px;
+}
+.work__tile-summary {
+  font-size: 15px;
   color: var(--text);
   line-height: 1.5;
   max-width: 520px;
-  margin: 12px 0 0;
+  margin: 8px 0 0;
 }
-.work__spotlight-stack {
+.work__tile-stack {
   list-style: none;
   padding: 0;
   margin: auto 0 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
 }
-.work__spotlight-stack li {
+.work__tile-stack li {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  padding: 4px 10px;
+  font-size: 10.5px;
+  padding: 3px 8px;
   border: 1px solid var(--border);
   border-radius: 999px;
   color: var(--text-dim);
 }
-.work__spotlight-foot {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 22px;
-  border-top: 1px solid var(--border);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--text-mute);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-.work__spotlight-role { color: var(--text-mute); }
-
-/* Reading list — table of contents */
-.work__list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  grid-auto-rows: 1fr;
-  gap: 0;
-}
-.work__row {
-  display: grid;
-  grid-template-columns: 56px 1fr 20px;
-  align-items: center;
-  gap: 20px;
-  padding: 24px 20px;
-  border: 0;
-  border-radius: 0;
-  border-top: 1px solid var(--border);
-  background: transparent;
-  cursor: pointer;
-  transition: background 260ms var(--ease), padding-left 260ms var(--ease);
-}
-.work__row:last-child { border-bottom: 1px solid var(--border); }
-.work__row:hover {
-  background: linear-gradient(90deg, rgba(110, 231, 249, 0.06), transparent 70%);
-  padding-left: 28px;
-}
-.work__row-index {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  color: var(--accent);
-  letter-spacing: 0.15em;
-}
-.work__row-body { min-width: 0; }
-.work__row-title {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 19px;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  margin: 0 0 4px;
-  color: var(--text);
-}
-.work__row-subtitle {
-  font-size: 13px;
-  color: var(--text-mute);
-  margin: 0 0 6px;
-}
-.work__row-stack {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--text-dim);
-  letter-spacing: 0.03em;
-}
-.work__row-arrow {
+.work__tile-arrow {
+  position: absolute;
+  bottom: 20px;
+  right: 24px;
   color: var(--accent);
   font-family: 'JetBrains Mono', monospace;
   font-size: 16px;
-  opacity: 0.4;
+  opacity: 0.35;
   transition: opacity 220ms var(--ease), transform 220ms var(--ease);
 }
-.work__row:hover .work__row-arrow {
+.work__tile:hover .work__tile-arrow {
   opacity: 1;
   transform: translateX(4px);
 }
-@media (max-width: 900px) {
+
+@media (max-width: 1100px) {
+  .work--editorial { grid-template-columns: repeat(2, 1fr); }
+  .work__tile.is-featured { grid-column: span 2; grid-row: span 1; }
+}
+@media (max-width: 720px) {
   .work--editorial { grid-template-columns: 1fr; }
-  .work__spotlight {
-    min-height: 0;
-    padding: 32px 24px;
-  }
-  .work__row {
-    grid-template-columns: 40px 1fr 20px;
-    padding: 20px 12px;
+  .work__tile,
+  .work__tile.is-featured {
+    grid-column: span 1;
+    grid-row: span 1;
+    padding: 24px 20px;
   }
 }
 
@@ -3077,10 +3050,9 @@ a.contact__v:hover { color: var(--accent); }
    Task 11.2 already set `.timeline--editorial::before` to read
    this var; keep as-is. */
 
-/* Work — --card-parallax on `.work__spotlight` only (R6.5).
-   The reading rows stay static so the section reads as a table
-   of contents. */
-.work__spotlight {
+/* Work — --card-parallax on featured tile only. Regular tiles stay
+   static so the grid reads as a stable bento (R6.5). */
+.work__tile.is-featured {
   transform: translateY(var(--card-parallax, 0px));
   transition: transform 200ms linear;
   will-change: transform;
@@ -3188,8 +3160,7 @@ a.contact__v:hover { color: var(--accent); }
 ------------------------------------------------------------- */
 
 /* Focus-veil host — position: relative so ::after anchors inside
-   the card regardless of whether the host is .card, .work__row,
-   or .work__spotlight. */
+   the card regardless of whether the host is .card or .work__tile. */
 .card--focus-veil {
   position: relative;
 }
@@ -3198,8 +3169,7 @@ a.contact__v:hover { color: var(--accent); }
    this pseudo on `.card`; the higher-specificity selector below
    swaps its properties without touching the base rule. */
 .card.card--focus-veil::after,
-.work__row.card--focus-veil::after,
-.work__spotlight.card--focus-veil::after {
+.work__tile.card--focus-veil::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -3222,26 +3192,26 @@ a.contact__v:hover { color: var(--accent); }
 /* JS-driven hover state — mirrors `.card:hover` so the interaction
    layer can bias SENTINEL and still see the card lift (R7.1). */
 .card.is-hover,
-.work__spotlight.is-hover {
+.work__tile.is-hover {
   transform: translateY(-6px);
   border-color: transparent;
 }
 .card.is-hover::before,
 .card.is-hover::after,
-.work__spotlight.is-hover::before,
-.work__spotlight.is-hover::after {
+.work__tile.is-hover::before,
+.work__tile.is-hover::after {
   opacity: 1;
 }
-.work__row.is-hover {
-  background: linear-gradient(90deg, rgba(110, 231, 249, 0.06), transparent 70%);
-  padding-left: 28px;
+.work__tile.is-hover {
+  transform: translateY(-3px);
+  border-color: rgba(110, 231, 249, 0.35);
+  background: rgba(110, 231, 249, 0.03);
 }
 
 /* Sibling dim — everything except the hovered project fades back
    so the reader's attention snaps to the focused item (R7.1). */
 .card.is-dimmed,
-.work__row.is-dimmed,
-.work__spotlight.is-dimmed {
+.work__tile.is-dimmed {
   opacity: 0.55;
   filter: grayscale(0.2);
   transition: opacity 260ms var(--ease), filter 260ms var(--ease);
@@ -3402,13 +3372,14 @@ a.contact__v:focus-visible {
   outline: none;
 }
 
-/* Work reading list rows — mirror the hover slide. */
-.work__row:focus-visible {
-  background: linear-gradient(90deg, rgba(110, 231, 249, 0.06), transparent 70%);
-  padding-left: 28px;
+/* Work bento tiles — mirror the hover lift on keyboard focus. */
+.work__tile:focus-visible {
+  transform: translateY(-3px);
+  border-color: rgba(110, 231, 249, 0.35);
+  background: rgba(110, 231, 249, 0.03);
   outline: none;
 }
-.work__row:focus-visible .work__row-arrow {
+.work__tile:focus-visible .work__tile-arrow {
   opacity: 1;
   transform: translateX(4px);
 }
@@ -3470,8 +3441,7 @@ a.contact__v:focus-visible {
   .trophy::before,
   .recog__item.is-award::before,
   .card.card--focus-veil::after,
-  .work__row.card--focus-veil::after,
-  .work__spotlight.card--focus-veil::after {
+  .work__tile.card--focus-veil::after {
     animation: none;
   }
 
@@ -3510,7 +3480,7 @@ a.contact__v:focus-visible {
   .hero__eyebrow,
   .hero__meta,
   .section--about .manifesto,
-  .work__spotlight,
+  .work__tile,
   .mf-list li,
   .vision--editorial .vision__lead,
   .vision__interests .vision-int,

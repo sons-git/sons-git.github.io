@@ -204,65 +204,55 @@ function alignTimelineRail() {
 function renderWork() {
   const root = document.getElementById('work-grid');
   if (!root) return;
+
+  // Bento grid renderer — scales to any project count.
+  // Layout: 3-column grid, `.work__tile` cards. First card gets
+  // `.is-featured` and spans 2 cols × 2 rows (the hero). Everything
+  // else is a single-cell tile that flows into the grid naturally.
+  // On mobile the grid collapses to 1 column and the hero un-spans.
   if (projects.length === 0) {
     root.innerHTML = '';
     return;
   }
 
-  const [spotlight, ...rows] = projects;
-
-  const spotlightHtml = `
-    <article class="work__spotlight card"
-             data-project-id="${escapeHtml(spotlight.id)}"
-             data-cursor="hover"
-             data-reveal
-             role="button"
-             tabindex="0"
-             aria-label="Open case study: ${escapeHtml(spotlight.title)}">
-      <div class="work__spotlight-eyebrow">
-        <span class="work__spotlight-badge">${escapeHtml(spotlight.badge)}</span>
-        <span class="work__spotlight-year">${escapeHtml(spotlight.year)}</span>
-      </div>
-      <h3 class="work__spotlight-title">${escapeHtml(spotlight.title)}</h3>
-      <p class="work__spotlight-subtitle">${escapeHtml(spotlight.subtitle)}</p>
-      <p class="work__spotlight-summary">${escapeHtml(spotlight.summary)}</p>
-      <ul class="work__spotlight-stack">
-        ${spotlight.stack.slice(0, 8).map((s) => `<li>${escapeHtml(s)}</li>`).join('')}
-      </ul>
-      <div class="work__spotlight-foot">
-        <span class="work__spotlight-role">${escapeHtml(spotlight.role)} · ${escapeHtml(spotlight.company || 'Rackspace')}</span>
-        <span class="card__arrow">Open case study →</span>
-      </div>
-    </article>`;
-
-  const rowsHtml = rows
+  const tilesHtml = projects
     .map((p, i) => {
-      const index = String(i + 2).padStart(2, '0'); // 02, 03, 04, 05
-      const stack = p.stack.slice(0, 3).join(' · ');
+      const isFeatured = i === 0;
+      const stack = (isFeatured ? p.stack.slice(0, 6) : p.stack.slice(0, 3))
+        .map((s) => `<li>${escapeHtml(s)}</li>`).join('');
+      const summary = isFeatured
+        ? `<p class="work__tile-summary">${escapeHtml(p.summary)}</p>`
+        : '';
+      const cls = `work__tile card${isFeatured ? ' is-featured' : ''}`;
+      const idx = String(i + 1).padStart(2, '0');
       return `
-      <li class="work__row card"
-          data-project-id="${escapeHtml(p.id)}"
-          data-cursor="hover"
-          data-reveal="slide-from=right"
-          data-reveal-delay="${i * 80}"
-          style="--i: ${i}"
-          role="button"
-          tabindex="0"
-          aria-label="Open case study: ${escapeHtml(p.title)}">
-        <div class="work__row-index">${index}</div>
-        <div class="work__row-body">
-          <h4 class="work__row-title">${escapeHtml(p.title)}</h4>
-          <p class="work__row-subtitle">${escapeHtml(p.subtitle)} · ${escapeHtml(p.badge)} · ${escapeHtml(p.year)}</p>
-          <div class="work__row-stack">${escapeHtml(stack)}</div>
+      <article class="${cls}"
+               data-project-id="${escapeHtml(p.id)}"
+               data-cursor="hover"
+               data-reveal="slide-from=bottom"
+               data-reveal-delay="${i * 60}"
+               style="--i:${i}"
+               role="button"
+               tabindex="0"
+               aria-label="Open case study: ${escapeHtml(p.title)}">
+        <div class="work__tile-eyebrow">
+          <span class="work__tile-index">${idx}</span>
+          <span class="work__tile-badge">${escapeHtml(p.badge)}</span>
+          <span class="work__tile-year">${escapeHtml(p.year)}</span>
         </div>
-        <span class="work__row-arrow" aria-hidden="true">→</span>
-      </li>`;
+        <h3 class="work__tile-title">${escapeHtml(p.title)}</h3>
+        <p class="work__tile-subtitle">${escapeHtml(p.subtitle)}</p>
+        ${summary}
+        <ul class="work__tile-stack">${stack}</ul>
+        <span class="work__tile-arrow" aria-hidden="true">→</span>
+      </article>`;
     })
     .join('');
 
-  root.innerHTML = `${spotlightHtml}
-    <ol class="work__list">${rowsHtml}</ol>`;
+  root.innerHTML = tilesHtml;
 }
+
+
 
 /**
  * Skills — Terminal manifest.
