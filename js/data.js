@@ -185,7 +185,7 @@ export const projects = [
     title: 'Enterprise AI Design Agent',
     subtitle: 'AI engineering assistant for product design',
     badge: 'Production · Rackspace',
-    year: '2025',
+    year: '2026',
     role: 'AI Engineer',
     stack: ['Agent Architecture', 'Prompt Mgmt', 'Enterprise APIs', 'Cloud', 'Auth', 'Caching'],
     summary: 'Compressed multi-week manufacturing feasibility evaluations to minutes while keeping engineer-in-the-loop review.',
